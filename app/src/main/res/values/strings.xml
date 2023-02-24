@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">Activities at home progress</string>
+    <string name="english_tasks">Inglese</string>
+    <string name="homework">Compiti</string>
+    <string name="back_button">Indietro</string>
+    <string name="save_action">Salva</string>
+    <string name="task_name_req">Seleziona l attività eseguita</string>
+    <string name="execution_date_req">Data di esecuzione: YYYY-MM-DD</string>
+    <string name="executed_req">executed: 0/1</string>
+    <string name="task_entry">Inserimento attività eseguita</string>
+    <string name="no_item_description">Non è stata censita alcuna esecuzione</string>
+    <string name="note_req">Nota (OPZ)</string>
+    <string name="attivita">Attività</string>
+    <string name="eseguita">Eseguita</string>
+    <string name="taskName">Attività</string>
+    <string name="executed">Eseguita</string>
+    <string name="execution_date">Data</string>
+    <string name="note">Nota</string>
+    <string name="esito_salvataggio">Esito salvataggio</string>
+    <string name="all_tasks">Tutte le attività eseguite</string>
+    <string name="subTaskName">Sotto-attività</string>
+    <string name="duration">Durata</string>
+    <string name="duration_req">Durata</string>
+    <string name="sub_task_name_req">Seleziona la sotto-attività</string>
+    <string name="task_detail">Dettaglio esecuzioni</string>
+    <string name="syncro">Nuoto sincronizzato</string>
+    <string name="other_activities">Altro</string>
+    <string name="attention">Attenzione</string>
+    <string name="delete_taskExecution_question">Vuoi cancellare questa esecuzione?</string>
+    <string name="delete_award_question">Vuoi cancellare questo premio?</string>
+    <string name="no">NO</string>
+    <string name="yes">SI</string>
+    <string name="start_screen">Riepilogo attività</string>
+    <string name="all_tasks_screen">Tutte le esecuzioni</string>
+    <string name="task_execution_entry_screen">Inserimento nuova esecuzione</string>
+    <string name="settings">Configurazioni</string>
+    <string name="awardName">Premio</string>
+    <string name="taskExecutionMinutesNeeded">Minuti necessari</string>
+    <string name="no_available_awards">Non è stato configurato alcun premio</string>
+    <string name="taskExecutionMinutesNeeded_req">Minuti di attività eseguita necessari</string>
+    <string-array name="tasks_array">
+        <item>Inglese</item>
+        <item>Compiti</item>
+        <item>Esercizi Syncro</item>
+        <item>Altro</item>
+    </string-array>
+</resources>
