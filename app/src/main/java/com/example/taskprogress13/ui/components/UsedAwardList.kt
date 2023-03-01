@@ -1,14 +1,12 @@
 package com.example.taskprogress13.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -20,21 +18,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskprogress13.R
-import com.example.taskprogress13.data.Award
-import com.example.taskprogress13.data.TaskExecution
+import com.example.taskprogress13.data.UsedAward
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 import kotlinx.coroutines.launch
 
-val awardNameWeight = 1f
-val taskExecutionMinutesNeededWeight = 1.7f
-
+val usedAwardNameWeight = 1.5f
+val usedAwardTaskExecutionMinutesNeededWeight = 1f
+val dateOfUseWeight = 1.5f
+val usedAwardTaskNameWeight = 1f
 
 @Composable
-fun AwardList(
+fun UsedAwardList(
     modifier: Modifier = Modifier,
-    awardList: List<Award>,
+    usedAwardList: List<UsedAward>,
     iconType: String
-//    onAwardClick: (Award) -> Unit
 ) {
 
     Column(horizontalAlignment = Alignment.CenterHorizontally)
@@ -48,16 +45,16 @@ fun AwardList(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
-                AwardListHeader(
+                UsedAwardListHeader(
                 )
             }
             items(
-                items = awardList,
+                items = usedAwardList,
                 //    key = {it.id}
-            ) { Award ->
-                AwardItem(
-                    Award = Award,
-                    iconType=iconType
+            ) { usedAward ->
+                UsedAwardItem(
+                    usedAward = usedAward,
+                    iconType = iconType
                     //           onAwardClick = onAwardClick
                 )
                 Divider()
@@ -68,7 +65,7 @@ fun AwardList(
 
 
 @Composable
-fun AwardListHeader(
+fun UsedAwardListHeader(
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -79,12 +76,22 @@ fun AwardListHeader(
     ) {
         Text(
             text = stringResource(R.string.awardName),
-            modifier = Modifier.weight(awardNameWeight),
+            modifier = Modifier.weight(usedAwardNameWeight),
             fontWeight = FontWeight.Bold
         )
         Text(
             text = stringResource(R.string.taskExecutionMinutesNeeded),
-            modifier = Modifier.weight(taskExecutionMinutesNeededWeight),
+            modifier = Modifier.weight(usedAwardTaskExecutionMinutesNeededWeight),
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.dateOfUse),
+            modifier = Modifier.weight(dateOfUseWeight),
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = stringResource(R.string.taskName),
+            modifier = Modifier.weight(usedAwardTaskNameWeight),
             fontWeight = FontWeight.Bold
         )
         Box(modifier=Modifier.width(30.dp))
@@ -96,9 +103,9 @@ fun AwardListHeader(
 
 
 @Composable
-private fun AwardItem(
+private fun UsedAwardItem(
     modifier: Modifier = Modifier,
-    Award: Award,
+    usedAward: UsedAward,
     iconType:String,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
 //    onAwardClick: (Award) -> Unit,
@@ -113,33 +120,48 @@ private fun AwardItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = Award.awardName,
-            modifier = Modifier.weight(awardNameWeight),
+            text = usedAward.awardName,
+            modifier = Modifier.weight(usedAwardNameWeight),
         )
         Text(
-            text = Award.taskExecutionMinutesNeeded.toString(),
-            modifier = Modifier.weight(taskExecutionMinutesNeededWeight),
+            text = usedAward.taskExecutionMinutesNeeded.toString(),
+            modifier = Modifier.weight(usedAwardTaskExecutionMinutesNeededWeight),
         )
-        IconButton(
-            onClick = { deleteConfirmationRequired=true },
-            modifier = Modifier.size(30.dp)
-        ) {            
-            if(iconType=="CheckBox") {
-                Checkbox(checked = false, onCheckedChange ={} )
+        Text(
+            text = usedAward.dateOfUse.toString(),
+            modifier = Modifier.weight(dateOfUseWeight),
+        )
+        Text(
+            text = usedAward.taskName.toString(),
+            modifier = Modifier.weight(usedAwardTaskNameWeight),
+        )
+        if(iconType!="Nulla") {
+            IconButton(
+                onClick = { deleteConfirmationRequired = true },
+                modifier = Modifier.size(30.dp)
+            ) {
+                if (iconType == "CheckBox") {
+                    Checkbox(checked = false, onCheckedChange = {})
+                } else {
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = null,
+                        modifier = Modifier.size(30.dp),
+                        tint = Color.Red
+                    )
+                }
             }
-            else{
-                Icon(imageVector = Icons.Filled.Delete,
-                    contentDescription = null,
-                    modifier = Modifier.size(30.dp),
-                    tint = Color.Red)
-            }
+        }
+        else {
+            Box(modifier = Modifier.width(30.dp))
+            { Text(text = "") }
         }
         if (deleteConfirmationRequired) {
             DeleteConfirmationDialog(
                 onDeleteConfirm = {
                     deleteConfirmationRequired = false
                     coroutineScope.launch {
-                        viewModel.deleteAward(award=Award)
+                        viewModel.deleteUsedAward(usedAward=usedAward)
                     }
                 },
                 onDeleteCancel = { deleteConfirmationRequired = false }
@@ -157,7 +179,7 @@ private fun DeleteConfirmationDialog(
     AlertDialog(
         onDismissRequest = { /* Do nothing */ },
         title = { Text(stringResource(R.string.attention)) },
-        text = { Text(stringResource(R.string.delete_award_question)) },
+        text = { Text(stringResource(R.string.delete_used_award_question)) },
         modifier = modifier.padding(16.dp),
         dismissButton = {
             TextButton(onClick = onDeleteCancel) {
@@ -177,12 +199,12 @@ private fun DeleteConfirmationDialog(
 
 @Preview
 @Composable
-fun AwardListPreview(){
-    AwardList(
+fun UsedAwardListPreview(){
+    UsedAwardList(
         modifier = Modifier,
-        awardList = arrayListOf(
-            Award(awardName="Film", taskExecutionMinutesNeeded=30,),
-            Award(awardName="Episodio Serie TV", taskExecutionMinutesNeeded=15)
+        usedAwardList = arrayListOf(
+            UsedAward(awardName="Film", taskExecutionMinutesNeeded=30, dateOfUse = "25-02-2023 09:23",dateOfUseUT = 123456678,taskName = "English"),
+            UsedAward(awardName="Episodio Serie", taskExecutionMinutesNeeded=15, dateOfUse = "23-02-2023 17:02",dateOfUseUT = 123456678, taskName  = "English")
         ),
         iconType = "Delete"
     )

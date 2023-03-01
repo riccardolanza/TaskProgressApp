@@ -38,6 +38,9 @@
     <string name="taskExecutionMinutesNeeded">Minuti necessari</string>
     <string name="no_available_awards">Non è stato configurato alcun premio</string>
     <string name="taskExecutionMinutesNeeded_req">Minuti di attività eseguita necessari</string>
+    <string name="no_used_awards_description">Non sono stati fruiti premi finora.</string>
+    <string name="dateOfUse">Data e ora di utilizzo</string>
+    <string name="delete_used_award_question">Vuoi eliminare questo utilizzo di premio?</string>
     <string-array name="tasks_array">
         <item>Inglese</item>
         <item>Compiti</item>

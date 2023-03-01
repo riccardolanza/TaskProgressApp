@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.taskprogress13.ui.screens.AuthenticationFormScreen
 
 /**
  * Contract for information needed on every Rally navigation destination
@@ -76,6 +77,37 @@ object AwardEntryScreenDestination : TaskProgressDestination {
     override val title = "Inserimento premi"
 }
 
+object AllEligibleAwardsScreenDestination : TaskProgressDestination {
+    //    override val icon = Icons.Filled.AttachMoney
+    override val route = "all_eligible_awards_screen"
+    override val title = "Lista dei premi utilizzabili"
+}
+
+object AllUsedAwardsScreenDestination : TaskProgressDestination {
+    //    override val icon = Icons.Filled.AttachMoney
+    override val route = "all_used_awards_screen"
+    override val title = "Lista dei premi utilizzati"
+}
+
+object UsedAwardsByTaskNameScreenDestination : TaskProgressDestination {
+    override val route = "used_awards_by_task_name_screen"
+    override val title = "Premi fruiti per"
+    const val taskNameArg = "task_name"
+    val routeWithArgs = "${route}/{${taskNameArg}}"
+    val arguments = listOf(
+        navArgument(taskNameArg) {
+            type = NavType.StringType
+            defaultValue = "Tutti"
+        }
+    )
+}
+
+object AuthenticationFormScreenDestination : TaskProgressDestination {
+    //    override val icon = Icons.Filled.AttachMoney
+    override val route = "authentication_form_screen"
+    override val title = "Form di autenticazione per l'amministrazione"
+}
+
 val taskProgressScreens = listOf(
     StartScreenDestination,
     AllTaskExecutionsScreenDestination,
@@ -83,7 +115,11 @@ val taskProgressScreens = listOf(
     TaskDetailScreenDestination,
     AdministrationScreenDestination,
     AllAvailableAwardsScreenDestination,
-    AwardEntryScreenDestination
+    AwardEntryScreenDestination,
+    AllEligibleAwardsScreenDestination,
+    AllUsedAwardsScreenDestination,
+    UsedAwardsByTaskNameScreenDestination,
+    AuthenticationFormScreenDestination
 )
 
 fun NavHostController.navigateSingleTopTo(route: String) =

@@ -1,34 +1,44 @@
 package com.example.taskprogress13.ui.screens
 
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskprogress13.R
-import com.example.taskprogress13.data.Award
 import com.example.taskprogress13.data.TaskReportData
 import com.example.taskprogress13.ui.components.transformTohhmm
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
-import kotlinx.coroutines.flow.Flow
-import java.text.SimpleDateFormat
-import java.util.*
 
 @Composable
 fun StartScreen(
     navigateToTaskExecutionEntryScreen: () -> Unit,
     navigateToAllTasksScreen: () -> Unit,
-    onButtonClicked: (String) -> Unit,
+    navigateToAllEligibleAwardsScreen: () -> Unit,
+    onDettagliButtonClicked: (String) -> Unit,
+    navigateToUsedAwardsByTaskNameScreen:  (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
@@ -36,7 +46,7 @@ fun StartScreen(
         horizontalAlignment = Alignment.CenterHorizontally
 
     ){
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         Box(
             modifier = Modifier
             .weight(4f)
@@ -51,63 +61,57 @@ fun StartScreen(
                         taskImageId = R.drawable.inglese,
                         taskDescription = "Inglese",
                         taskReportData=taskReport(taskName = "Inglese"),
-                        onButtonClicked = onButtonClicked,
+                        onButtonClicked = onDettagliButtonClicked,
+                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
                         taskName="Inglese",
                         modifier = Modifier
                             .weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(40.dp))
+                    Spacer(modifier = Modifier.width(20.dp))
                     TaskCard(
                         taskImageId = R.drawable.syncro3,
                         taskDescription = "Nuoto sincronizzato",
                         taskReportData=taskReport(taskName = "Syncro"),
-                        onButtonClicked = onButtonClicked,
+                        onButtonClicked = onDettagliButtonClicked,
+                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
                         taskName="Syncro",
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Row(modifier = Modifier.weight(1f)) {
                     TaskCard(
                         taskImageId = R.drawable.compiti1,
                         taskDescription = "Compiti",
                         taskReportData=taskReport(taskName = "Compiti"),
-                        onButtonClicked = onButtonClicked,
+                        onButtonClicked = onDettagliButtonClicked,
+                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
                         taskName="Compiti",
                         modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.width(40.dp))
+                    Spacer(modifier = Modifier.width(20.dp))
                     TaskCard(
                         taskImageId = R.drawable.attivita_varie,
                         taskDescription = "Altre attività",
                         taskReportData=taskReport(taskName = "Altro"),
-                        onButtonClicked = onButtonClicked,
+                        onButtonClicked = onDettagliButtonClicked,
+                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
                         taskName="Altro",
                         modifier = Modifier.weight(1f)
                     )
                 }
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(10.dp))
             }
         }
-        Divider()
         /*
+        Divider()
         Box(
             modifier = Modifier
-                .weight(0.3f)
-                .fillMaxWidth()
-        )
-        {
-            Button(
-                onClick = navigateToTaskExecutionEntryScreen,
-                modifier
-                    .align(Alignment.Center)
-                    .size(width = 300.dp,height = 35.dp)
-            )
-            { Text(text = "Inserisci nuovo task") }
-        }*/
-        Box(
-            modifier = Modifier
-                .weight(0.3f)
+                .weight(0.2f)
                 .fillMaxWidth()
         )
         {
@@ -115,13 +119,14 @@ fun StartScreen(
                 onClick = navigateToAllTasksScreen,
                 modifier
                     .align(Alignment.Center)
-                    .size(width = 300.dp,height = 35.dp)
+                    .size(width = 300.dp, height = 35.dp)
             )
             { Text(
                 text = "Visualizza tutte le attività inserite",
                 textAlign = Center
             ) }
         }
+        */
     }
 
 
@@ -135,6 +140,8 @@ private fun TaskCard(
     taskDescription: String,
     taskReportData: TaskReportData,
     onButtonClicked: (String) -> Unit,
+    navigateToAllEligibleAwardsScreen: () -> Unit,
+    navigateToUsedAwardsByTaskNameScreen: (String) -> Unit,
     taskName:String,
     modifier: Modifier = Modifier
 ){
@@ -145,10 +152,11 @@ private fun TaskCard(
             horizontalAlignment = Alignment.CenterHorizontally
          //   modifier = Modifier.padding(30.dp)
         ) {
+            Spacer(modifier = Modifier.height(10.dp))
             Text(
                 text=taskName,
                 style = MaterialTheme.typography.h1,
-                modifier=Modifier.padding(top=10.dp)
+            //    modifier=Modifier.padding(top=10.dp)
            )
         //    Spacer(modifier = Modifier.height(10.dp))
             Image(
@@ -158,35 +166,74 @@ private fun TaskCard(
                     .size(190.dp)
                     .padding(10.dp)
             )
+
             Text(
-                text = "Totale minuti: ${transformTohhmm(taskReportData.total_duration.toString())}",
-                fontSize = 15.sp
+                text = "Totale (7/30 gg)",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold
             )
+
             Text(
-                text = "Ultimi 7 giorni: ${transformTohhmm(taskReportData.last7Days_duration.toString())} (${taskReportData.last7Days_progress}%)",
-                fontSize = 15.sp
+                text = "${transformTohhmm(taskReportData.last7Days_duration.toString())} (${taskReportData.last7Days_progress}%)/${transformTohhmm(taskReportData.last30Days_duration.toString())} (${taskReportData.last30Days_progress}%)",
+                style = MaterialTheme.typography.body2
             )
-            Text(
-                text = "Ultimi 30 giorni: ${transformTohhmm(taskReportData.last30Days_duration.toString())} (${taskReportData.last30Days_progress}%)",
-                fontSize = 15.sp
-            )
-            Box()
-            {
-                Row(){
-                    Image(
-                        painter = painterResource(R.drawable.trofeo_3),
-                        contentDescription = "Premio",
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(5.dp)
-                    )
-                    Text(
-                        text = "-"
-                    )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val annotatedString = buildAnnotatedString {
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground,fontSize = 15.sp,fontWeight = FontWeight.Bold)) {
+                    append("Al netto dei ")
+                }
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.primary,fontSize = 15.sp,fontWeight = FontWeight.Bold,)) {
+                    append("premi fruiti")
+                }
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground, fontSize = 15.sp,fontWeight = FontWeight.Bold,)) {
+                    append(" (7/30 gg)")
                 }
             }
+
+            ClickableText(
+                text = annotatedString,
+                onClick = {navigateToUsedAwardsByTaskNameScreen(taskName)}
+            )
+
+            Text(
+                text = "${transformTohhmm(taskReportData.last7Days_netDuration.toString())} (${taskReportData.last7Days_netProgress}%)/${transformTohhmm(taskReportData.last30Days_netDuration.toString())} (${taskReportData.last30Days_netProgress}%)",
+                style = MaterialTheme.typography.body2
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            val infiniteTransition = rememberInfiniteTransition()
+            val scale by infiniteTransition.animateFloat(
+                initialValue = 1f,
+                targetValue = 1.2f,
+                animationSpec = infiniteRepeatable(
+                    animation = tween(1000),
+                    repeatMode = RepeatMode.Reverse
+                )
+            )
+            val awardIsEligible= (taskReportData.last7Days_netProgress >=100 || taskReportData.last30Days_netProgress >=100)
+            IconButton(
+                onClick = {
+                    if (awardIsEligible) {
+                        navigateToAllEligibleAwardsScreen()
+                    } else {}
+                          },
+                modifier = Modifier
+                    .size(60.dp)
+                    .scale(scale)
+            ) {
+                Icon(
+                    imageVector = ImageVector.vectorResource(id = R.drawable.workspace_premium_black_24dp),
+                    contentDescription = null,
+                    modifier = Modifier.size(60.dp),
+                    tint = if (awardIsEligible) Color(0xFFD2AC47) else Color.Transparent
+                )
+            }
+
  //           Spacer(modifier = Modifier.height(20.dp))
-            Box(modifier=Modifier.padding(horizontal = 100.dp, vertical = 10.dp)) {
+            Box(modifier=Modifier.padding(horizontal = 110.dp, vertical = 10.dp)) {
                 Button(onClick = { onButtonClicked(taskName) }) { Text(text = "dettagli") }
             }
         }
@@ -198,7 +245,7 @@ fun taskReport(
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
     taskName: String
 ) : TaskReportData {
-    var taskReportData: TaskReportData = TaskReportData(0,0,0,0,0)
+    var taskReportData: TaskReportData = TaskReportData(0,0,0,0,0, 0, 0, 0, 0)
     val dailyTargetInMinutes=10
 
 // UT variables
@@ -206,7 +253,7 @@ fun taskReport(
     val _8DaysAgoUT= currentUT - 691200000 // per poter prendere in considerazione anche la parte di giornata iniziale
      val _31DaysAgoUT = currentUT - 2678400000 // per poter prendere in considerazione anche la parte di giornata iniziale
 
-//durations
+//total durations
     val last7Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_8DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
     val last30Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_31DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
     val total_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=0,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
@@ -215,29 +262,23 @@ fun taskReport(
     val last7Days_progress = 100*last7Days_duration/(7*dailyTargetInMinutes)
     val last30Days_progress = 100*last30Days_duration/(30*dailyTargetInMinutes)
 
+//Awards durations
+    val last7Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_8DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
+    val last30Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_31DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
 
-    taskReportData = TaskReportData(total_duration,last30Days_duration, last7Days_duration,last30Days_progress,last7Days_progress)
+//netDurations
+    val last7Days_netDuration = last7Days_duration - last7Days_awardDuration
+    val last30Days_netDuration = last30Days_duration - last30Days_awardDuration
+//net progresses
+    val last7Days_netProgress = 100*(last7Days_netDuration)/(7*dailyTargetInMinutes)
+    val last30Days_netProgress = 100*(last30Days_netDuration)/(30*dailyTargetInMinutes)
+
+    taskReportData = TaskReportData(total_duration,last30Days_duration, last7Days_duration,last30Days_progress,last7Days_progress,last7Days_netDuration,last30Days_netDuration,last30Days_netProgress,last7Days_netProgress)
 //    println("taskReportData: $taskReportData")
     return taskReportData
 
 }
 
-@Composable
-fun checkEntitledAwards(
-    viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
-    taskReportData: TaskReportData
-    ): Flow<List<Award>>
-{
-    if(taskReportData.last7Days_progress>=100)
-    {
-        return viewModel.getByTaskExecutionMinutesNeeded(taskReportData.last7Days_duration)
-    }
-    else if (taskReportData.last30Days_progress>=100)
-    {
-        return viewModel.getByTaskExecutionMinutesNeeded(taskReportData.last30Days_duration)
-    }
-    else return viewModel.getByTaskExecutionMinutesNeeded(0)
-}
 
 @Preview
 @Composable
@@ -246,7 +287,9 @@ fun StartScreenPreview(){
         //navigateToEnglishTasksScreen = {},
         navigateToTaskExecutionEntryScreen={},
         navigateToAllTasksScreen = {},
-        onButtonClicked = { },
+        onDettagliButtonClicked = {},
+        navigateToAllEligibleAwardsScreen = {},
+        navigateToUsedAwardsByTaskNameScreen={},
         modifier = Modifier
     )
 }

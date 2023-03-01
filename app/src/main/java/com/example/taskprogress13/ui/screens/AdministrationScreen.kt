@@ -19,28 +19,34 @@ import com.example.taskprogress13.data.TaskExecution
 @Composable
 fun AdministrationScreen(
     //awardList:List<Award>,
-    onAllAvailableAwardsButtonClick: () -> Unit
+    onAllAvailableAwardsButtonClick: () -> Unit,
+    onAllUsedAwardsButtonClick: () -> Unit
 )
 {
     val contextForToast = LocalContext.current.applicationContext
     Column() {
-        Box(
-            modifier = Modifier
-                .weight(0.3f)
-                .fillMaxWidth()
-        )
+        Box(modifier = Modifier.weight(0.3f).fillMaxWidth())
         {
             Button(
                 onClick = onAllAvailableAwardsButtonClick,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(width = 300.dp, height = 35.dp)
+                modifier = Modifier.align(Alignment.Center).size(width = 300.dp, height = 35.dp)
             )
-            {
-                Text(
+            {Text(
                     text = "Visualizza i premi disponibili",
                     textAlign = TextAlign.Center
                 )
+            }
+        }
+        Box(modifier = Modifier.weight(0.3f).fillMaxWidth())
+        {
+            Button(
+                onClick = onAllUsedAwardsButtonClick,
+                modifier = Modifier.align(Alignment.Center).size(width = 300.dp, height = 35.dp)
+            )
+            {Text(
+                text = "Visualizza i premi utilizzati",
+                textAlign = TextAlign.Center
+            )
             }
         }
     }
@@ -56,7 +62,7 @@ fun AdministrationScreenPreview(){
             Award(awardName="Film", taskExecutionMinutesNeeded=30,),
             Award(awardName="Episodio Serie TV", taskExecutionMinutesNeeded=15)
         ),*/
-        onAllAvailableAwardsButtonClick={}
-
+        onAllAvailableAwardsButtonClick={},
+        onAllUsedAwardsButtonClick={}
     )
 }

@@ -8,5 +8,9 @@ data class TaskReportData(
     val last30Days_duration: Int,
     val last7Days_duration: Int,
     val last30Days_progress: Int,
-    val last7Days_progress: Int
+    val last7Days_progress: Int,
+    val last30Days_netDuration: Int,
+    val last7Days_netDuration: Int,
+    val last30Days_netProgress: Int,
+    val last7Days_netProgress: Int
 )

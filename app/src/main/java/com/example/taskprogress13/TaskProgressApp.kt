@@ -1,8 +1,5 @@
 package com.example.taskprogress13
 
-
-import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,7 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -20,14 +16,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
 import com.example.taskprogress13.ui.screens.*
-import com.example.taskprogress13.ui.viewmodel.TaskProgressUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
-import com.example.taskprogress13.ui.viewmodel.isValid
 import kotlinx.coroutines.launch
 
 
@@ -36,7 +27,6 @@ import kotlinx.coroutines.launch
 fun TaskProgressApp(
     modifier: Modifier = Modifier,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
-    navController: NavHostController = rememberNavController()
 ) {
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
@@ -61,7 +51,7 @@ fun TaskProgressApp(
                 },
                 topAppBarTitle = topAppBarTitle,
                 onActionsClick = {
-                    navController.navigate(AdministrationScreenDestination.route)
+                    navController.navigate(AuthenticationFormScreenDestination.route)
                 }
             )
         }
@@ -79,9 +69,16 @@ fun TaskProgressApp(
                     navigateToAllTasksScreen = {
                         navController.navigate(AllTaskExecutionsScreenDestination.route)
                     },
-                    onButtonClicked = {taskName ->
+                    onDettagliButtonClicked = {taskName ->
                         navController
                             .navigateSingleTopTo("${TaskDetailScreenDestination.route}/$taskName")
+                    },
+                    navigateToAllEligibleAwardsScreen={
+                        navController.navigate(AllEligibleAwardsScreenDestination.route)
+                    },
+                    navigateToUsedAwardsByTaskNameScreen={taskName ->
+                        navController
+                            .navigateSingleTopTo("${UsedAwardsByTaskNameScreenDestination.route}/$taskName")
                     }
                 )
                 topAppBarTitle = StartScreenDestination.title
@@ -107,9 +104,8 @@ fun TaskProgressApp(
                     )
                 }
                 topAppBarTitle = TaskDetailScreenDestination.title + " " + taskName
-
-
             }
+
             composable(route = AllTaskExecutionsScreenDestination.route) {
 //                val context = LocalContext.current
                 AllTaskExecutionsScreen(
@@ -138,7 +134,9 @@ fun TaskProgressApp(
 
             composable(route = AdministrationScreenDestination.route) {
                 AdministrationScreen(
-                    onAllAvailableAwardsButtonClick = {navController.navigate(AllAvailableAwardsScreenDestination.route)}
+                    onAllAvailableAwardsButtonClick = {navController.navigate(AllAvailableAwardsScreenDestination.route)} ,
+                    onAllUsedAwardsButtonClick = {navController.navigate(AllUsedAwardsScreenDestination.route)}
+
                 )
                 topAppBarTitle=AdministrationScreenDestination.title
             }
@@ -168,6 +166,52 @@ fun TaskProgressApp(
                     },
                 )
                 topAppBarTitle=AwardEntryScreenDestination.title
+            }
+
+            composable(route = AllEligibleAwardsScreenDestination.route) {
+                AllEligibleAwardsScreen(
+                    navigateToStartScreen = {
+                        navController.navigate(StartScreenDestination.route) {
+                            popUpTo(navController.graph.id) {
+                                inclusive = true
+                            }
+                        }
+                    }
+                )
+                topAppBarTitle=AllAvailableAwardsScreenDestination.title
+            }
+
+            composable(route = AllUsedAwardsScreenDestination.route) {
+                AllUsedAwardsScreen()
+                topAppBarTitle=AllUsedAwardsScreenDestination.title
+            }
+
+            composable(
+                route = UsedAwardsByTaskNameScreenDestination.routeWithArgs,
+                arguments =  UsedAwardsByTaskNameScreenDestination.arguments
+            ) {
+                    navBackStackEntry ->
+                // Retrieve the passed argument
+                val taskName =
+                    navBackStackEntry.arguments?.getString(UsedAwardsByTaskNameScreenDestination.taskNameArg)
+
+                println("taskName è $taskName")
+
+                if (taskName != null) {
+                    UsedAwardsByTaskNameScreen(taskName = taskName)
+                }
+                else println("taskName è nullo")
+
+                topAppBarTitle = UsedAwardsByTaskNameScreenDestination.title + " " + taskName
+            }
+
+            composable(route = AuthenticationFormScreenDestination.route) {
+                AuthenticationFormScreen(
+                    onPasswordVerify={password->
+                        if (PasswordVerify(password) == true) navController.navigate(AdministrationScreenDestination.route)
+                        }
+                )
+                topAppBarTitle=AuthenticationFormScreenDestination.title
             }
         }
     }

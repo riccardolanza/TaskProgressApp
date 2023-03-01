@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Place
 
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -41,24 +43,26 @@ fun AwardEntryScreen(
         verticalArrangement = Arrangement.spacedBy(32.dp)
     ) {
         AwardInputForm(awardUiState = awardUiState, onValueChange = onAwardValueChange)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp)            ,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-            Button(
-                onClick = onSaveClick,
-                enabled = awardUiState.actionEnabled,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(R.string.save_action))
-            }
+        Box(Modifier.fillMaxSize()){
+            Column(
+                verticalArrangement = Arrangement.spacedBy(32.dp)            ,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Button(
+                    onClick = onSaveClick,
+                    enabled = awardUiState.actionEnabled,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.save_action))
+                }
 
-            VisualizeTaskExecutionEntrySaved(
-                modifier = Modifier,
-                awardList=awardList,
-                awardEntrySaved=awardUiState.awardEntrySaved,
-                onFABclick=onFABclick,
-            )
+                VisualizeTaskExecutionEntrySaved(
+                    modifier = Modifier,
+                    awardList=awardList,
+                    awardEntrySaved=awardUiState.awardEntrySaved,
+                    onFABclick=onFABclick,
+                )
+            }
         }
     }
 }
@@ -121,7 +125,7 @@ fun VisualizeTaskExecutionEntrySaved(
                 )
             }
         } else {
-            Box(){
+            Box(Modifier.fillMaxSize()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally)
                 {
                     Text(
@@ -130,25 +134,27 @@ fun VisualizeTaskExecutionEntrySaved(
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     AwardList(
-                        awardList = awardList
+                        awardList = awardList,
+                        iconType = "Delete"
                     )
+                    Box(Modifier.fillMaxSize()) {
+                        FloatingActionButton(
+                            modifier = Modifier
+                                .padding(all = 16.dp)
+                                .align(alignment = Alignment.BottomEnd),
+                            onClick = onFABclick,
+                            backgroundColor = Blu200,
+                            //    contentColor = Color.White
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Done,
+                                contentDescription = "OK",
+                                //    tint= Color.Green
+                            )
+                        }
+                    }
                 }
-            }
-            Box(Modifier.fillMaxSize()){
-                FloatingActionButton(
-                    modifier = Modifier
-                        .padding(all = 16.dp)
-                        .align(alignment = Alignment.BottomEnd),
-                    onClick = onFABclick,
-                    backgroundColor = Blu200,
-                //    contentColor = Color.White
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.Done,
-                        contentDescription = "OK",
-                        tint= Color.Green
-                    )
-                }
+
             }
         }
     }

@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 val executionDateWeight = 1.2f
 val taskNameWeight = 1f
-val subTaskNameWeight = 1.7f
+val subTaskNameWeight = 2f
 val durationWeight = 1f
 val noteWeight = 2f
 
@@ -42,7 +42,7 @@ fun TaskExecutionList(
      //   TaskExecutionListHeader()
         LazyColumn(
             modifier = Modifier
-                .fillMaxSize()
+ //               .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
