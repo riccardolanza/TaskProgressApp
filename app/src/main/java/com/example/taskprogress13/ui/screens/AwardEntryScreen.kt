@@ -22,6 +22,7 @@ import com.example.taskprogress13.data.Award
 import com.example.taskprogress13.ui.components.AwardList
 import com.example.taskprogress13.ui.theme.Blu200
 import com.example.taskprogress13.ui.theme.TaskProgress13Theme
+import com.example.taskprogress13.ui.theme.rememberWindowSizeClass
 import com.example.taskprogress13.ui.viewmodel.AwardUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 
@@ -163,7 +164,8 @@ fun VisualizeTaskExecutionEntrySaved(
 @Preview(showBackground = true)
 @Composable
 private fun ItemEntryScreenPreview() {
-    TaskProgress13Theme() {
+    val window = rememberWindowSizeClass()
+    TaskProgress13Theme(window) {
         AwardEntryScreen(
             awardUiState = AwardUiState(
                 awardName = "Film",

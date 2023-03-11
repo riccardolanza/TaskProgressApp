@@ -2,6 +2,7 @@ package com.example.taskprogress13.data
 
 
 
+import android.database.sqlite.SQLiteException
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
@@ -52,7 +53,9 @@ interface TaskExecutionDao {
 
 
 
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+  //  suspend fun insert(taskExecution: TaskExecution)
+    @Throws(SQLiteException::class)
     suspend fun insert(taskExecution: TaskExecution)
 
     @Update

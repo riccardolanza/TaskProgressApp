@@ -1,8 +1,12 @@
 package com.example.taskprogress13.ui.screens
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +31,7 @@ import java.time.format.DateTimeFormatter
 fun AllEligibleAwardsScreen(
     navigateToStartScreen:() -> Unit,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
+    context: Context
 )
 {
     //val selectedValue = remember { mutableStateOf("") }
@@ -41,9 +46,11 @@ fun AllEligibleAwardsScreen(
     var usedAwardUiState = viewModel.usedAwardUiState
 
     Column(
-        Modifier.padding(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
+        modifier= Modifier
+            .padding(8.dp)
+            .verticalScroll(rememberScrollState())
+     ) {
         Image(
             painter=painterResource(R.drawable.brava_ciccipoppola),
             contentDescription = "Brava Ciccipoppola!",
@@ -53,11 +60,12 @@ fun AllEligibleAwardsScreen(
         )
         Text(
             text = "Complimenti Ciccipoppola," + "\n" + "hai diritto ad uno dei seguenti premi!",
-            style = MaterialTheme.typography.h1,
+            style = MaterialTheme.typography.h6,
             textAlign = TextAlign.Center,
         )
         Text(
             text = "(tra parentesi i minuti che verranno scalati dalle attività eseguite)",
+            style = MaterialTheme.typography.body1,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier=Modifier.height(50.dp))
@@ -113,6 +121,7 @@ fun AllEligibleAwardsScreen(
                     val dateOfUse = LocalDateTime.now().format(formatter)
                     coroutineScope.launch {
                         viewModel.saveUsedAward(usedAward=selectedValue.value,dateOfUse.toString(),taskName="Inglese")
+                        Toast.makeText(context, "Execuzione salvata!", Toast.LENGTH_SHORT).show()
                     }
                     navigateToStartScreen()
                 },

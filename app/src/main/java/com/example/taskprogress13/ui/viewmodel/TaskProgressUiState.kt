@@ -16,7 +16,8 @@ data class TaskProgressUiState(
     val executionDateUT: Long = 0,
     val note: String = "",
     val actionEnabled: Boolean = false,
-    val taskExecutionEntrySaved: Boolean = false
+    val taskExecutionEntrySaved: Boolean = false,
+    val visualizeTaskExecutionNotSavedErrorMessageEnabled: Boolean = false
 )
 
 /**

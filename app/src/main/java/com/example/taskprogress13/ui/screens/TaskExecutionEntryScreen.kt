@@ -1,84 +1,134 @@
 package com.example.taskprogress13.ui.screens
 
 import android.app.DatePickerDialog
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.widget.DatePicker
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
-
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.outlined.ArrowDropDown
-import androidx.compose.material.icons.rounded.DateRange
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Alignment.Companion.Center
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.example.taskprogress13.R
 import com.example.taskprogress13.data.TaskExecution
 import com.example.taskprogress13.ui.components.TaskExecutionList
 import com.example.taskprogress13.ui.theme.Blu200
-import com.example.taskprogress13.ui.theme.TaskProgress13Theme
 import com.example.taskprogress13.ui.viewmodel.TaskProgressUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 
+import kotlinx.coroutines.launch
+
 import java.util.*
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TaskExecutionEntryScreen(
-    taskProgressUiState: TaskProgressUiState,
-    onTaskExecutionValueChange: (TaskProgressUiState) -> Unit,
-    onSaveClick: () -> Unit,
+ //   taskProgressUiState: TaskProgressUiState,
+//    onTaskExecutionValueChange: (TaskProgressUiState) -> Unit,
+//    onSaveClick: () -> Unit,
+    taskName:String,
     onFABclick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
-    navController: NavHostController = rememberNavController()
-) {
+    context: Context
+ ) {
+    val taskProgressUiState = viewModel.taskProgressUiState
+    val onTaskExecutionValueChange = viewModel::updateTaskProgressUiState
     val taskExecutionList by viewModel.getTaskExecutionFor_taskName_subTaskName_executionDate(taskProgressUiState.taskName, taskProgressUiState.subTaskName, taskProgressUiState.executionDate).collectAsState(emptyList())
+    val coroutineScope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
+
+
+    viewModel.updateUiStateTaskName(taskName=taskName)
     Column(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(32.dp)
+            .verticalScroll(rememberScrollState())
+            //    .fillMaxWidth()
+            .padding(6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+
     ) {
+
         TaskExecutionInputForm(taskProgressUiState = taskProgressUiState, onValueChange = onTaskExecutionValueChange)
         Column(
-            verticalArrangement = Arrangement.spacedBy(32.dp)            ,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ){
-             Button(
-                 onClick = onSaveClick,
-                 enabled = taskProgressUiState.actionEnabled,
-                 modifier = Modifier.fillMaxWidth()
-             ) {
-                 Text(stringResource(R.string.save_action))
-             }
+            verticalArrangement = Arrangement.spacedBy(6.dp)            ,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.fillMaxWidth()
 
+        ){
+
+            Box(){
+                 Button(
+                     modifier = Modifier.padding(10.dp),
+                     onClick = {
+                         coroutineScope.launch {
+                             if (taskExecutionList.isEmpty()) {
+                                 viewModel.saveTaskExecution()
+                                 Toast.makeText(context, "Execuzione salvata!", Toast.LENGTH_SHORT).show()
+                             }
+                             else
+                                 //Toast.makeText(context, "Questa esecuzione è già stata inserita!", Toast.LENGTH_SHORT).show()
+                                 //visualizeNotSavedErrorMessageEnabled=true
+                                 viewModel.updateUiStateVisualizeTaskExecutionNotSavedErrorMessageEnabled(true)
+                        }
+                         focusManager.clearFocus()
+                     },
+                     enabled = taskProgressUiState.actionEnabled && !taskProgressUiState.taskExecutionEntrySaved,
+                 ) {
+                     Text(
+                         text=stringResource(R.string.save_action),
+                         style = MaterialTheme.typography.body2
+                     )
+                 }
+             }
+            if(taskProgressUiState.taskExecutionEntrySaved) {
+                sendWhatsAppMessage(context = context, taskExecutionList=taskExecutionList.toString())
+            }
+
+            if(taskProgressUiState.visualizeTaskExecutionNotSavedErrorMessageEnabled==true) visualizeNotSavedErrorMessage()
+/*
             visualizeTaskExecutionEntrySaved(
                 modifier = Modifier,
                 taskExecutionList=taskExecutionList,
                 taskExecutionEntrySaved=taskProgressUiState.taskExecutionEntrySaved,
                 onFABclick=onFABclick,
+                context = context
             )
+            */
         }
     }
 }
 
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun TaskExecutionInputForm(
     taskProgressUiState: TaskProgressUiState,
@@ -86,7 +136,10 @@ fun TaskExecutionInputForm(
     onValueChange: (TaskProgressUiState) -> Unit = {},
     enabled: Boolean = true
 ) {
-    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
 // ----------------------- Inizio inserimento task ---------------------------------
         Box {
@@ -98,10 +151,13 @@ fun TaskExecutionInputForm(
                     //    value = (selected.second),
                     value = taskProgressUiState.taskName,
                     onValueChange = {onValueChange(taskProgressUiState.copy(taskName = selected.second))},
-                    label = { Text(stringResource(R.string.task_name_req)) },
-                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text(text=stringResource(R.string.task_name_req),style = MaterialTheme.typography.body1) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .defaultMinSize(10.dp),
                     trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
-                    readOnly = true
+                    readOnly = true,
+                    textStyle = MaterialTheme.typography.body1
                 )
                 DropdownMenu(
                     modifier = Modifier.fillMaxWidth(),
@@ -120,6 +176,7 @@ fun TaskExecutionInputForm(
                             content = {
                                 Text(
                                     text = (entry.second),
+                                    style = MaterialTheme.typography.body1,
                                     modifier = Modifier
                                         .wrapContentWidth()
                                     //      .align(Alignment.Start)
@@ -134,7 +191,7 @@ fun TaskExecutionInputForm(
                 modifier = Modifier
                     .matchParentSize()
                     .background(androidx.compose.ui.graphics.Color.Transparent)
-                    .padding(10.dp)
+                    .padding(5.dp)
                     .clickable(
                         onClick = { expanded = !expanded }
                     )
@@ -145,7 +202,7 @@ fun TaskExecutionInputForm(
         Box {
             var selected by remember { mutableStateOf(Pair("Key0",""))}
             var expanded by remember { mutableStateOf(false) } // initial value
-            var list: List<Pair<String, String>>
+            val list: List<Pair<String, String>>
             when (taskProgressUiState.taskName) {
                 "Inglese" -> {list=listOf(
                                         Pair("Key1","Speexx"),
@@ -174,10 +231,11 @@ fun TaskExecutionInputForm(
                     //    value = (selected.second),
                     value = taskProgressUiState.subTaskName,
                     onValueChange = {onValueChange(taskProgressUiState.copy(subTaskName = selected.second))},
-                    label = { Text(stringResource(R.string.sub_task_name_req)) },
+                    label = { Text(text=stringResource(R.string.sub_task_name_req),style = MaterialTheme.typography.body1) },
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null) },
-                    readOnly = true
+                    readOnly = true,
+                    textStyle = MaterialTheme.typography.body1
                 )
                 DropdownMenu(
                     modifier = Modifier.fillMaxWidth(),
@@ -196,6 +254,7 @@ fun TaskExecutionInputForm(
                             content = {
                                 Text(
                                     text = (entry.second),
+                                    style = MaterialTheme.typography.body1,
                                     modifier = Modifier
                                         .wrapContentWidth()
                                     //      .align(Alignment.Start)
@@ -231,7 +290,7 @@ fun TaskExecutionInputForm(
                                 else {}
 
                             },
-            label = { Text(stringResource(R.string.duration_req)) },
+            label = { Text(text=stringResource(R.string.duration_req),style = MaterialTheme.typography.body1) },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -278,22 +337,25 @@ fun TaskExecutionInputForm(
             }, mYear, mMonth, mDay
         )
         Column(
-            modifier = Modifier
-            //           .fillMaxSize(),
-            //       verticalArrangement = Arrangement.Center
-            ,
+            modifier = Modifier,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             val source = remember { MutableInteractionSource()  }
             OutlinedTextField(
                 value = taskProgressUiState.executionDate,
-                onValueChange = { onValueChange(taskProgressUiState.copy(executionDate = "${mDate.value}")) },
-                label = { Text(text = "Data di esecuzione") },
+                onValueChange = {
+                    onValueChange(taskProgressUiState.copy(executionDate = "${mDate.value}"))
+                //    focusManager.clearFocus()
+                     },
+                label = { Text(text = "Data di esecuzione",style = MaterialTheme.typography.body1) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { mDatePickerDialog.show() },
                 interactionSource = source,
-
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = { keyboardController?.hide() }
+                ),
                 )
             if ( source.collectIsPressedAsState().value) mDatePickerDialog.show()
         }
@@ -303,7 +365,7 @@ fun TaskExecutionInputForm(
         OutlinedTextField(
             value = taskProgressUiState.note,
             onValueChange = { onValueChange(taskProgressUiState.copy(note = it)) },
-            label = { Text(stringResource(R.string.note_req)) },
+            label = { Text(text=stringResource(R.string.note_req),style = MaterialTheme.typography.body1) },
             modifier = Modifier.fillMaxWidth(),
             enabled = enabled,
             singleLine = true
@@ -322,12 +384,31 @@ fun TaskExecutionInputForm(
     }
 }
 
+
+@Composable
+fun visualizeNotSavedErrorMessage(
+) {
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(20.dp),
+        contentAlignment = Center
+    ) {
+        Text(
+            text = "L'esecuzione non è stata salvata perchè ne è presente già una relativa a stessa attività, sotto-attività e giorno",
+            style = MaterialTheme.typography.body1,
+            color = Color.Red
+        )
+    }
+}
+
+
 @Composable
 fun visualizeTaskExecutionEntrySaved(
         modifier: Modifier=Modifier,
         taskExecutionList: List<TaskExecution>,
         taskExecutionEntrySaved: Boolean,
         onFABclick: () -> Unit,
+        context: Context
 ) {
     if(taskExecutionEntrySaved) {
         if (taskExecutionList.isEmpty()) {
@@ -338,19 +419,23 @@ fun visualizeTaskExecutionEntrySaved(
                 )
             }
         } else {
-            Box(){
+         //   Box(){
                 Column(horizontalAlignment = Alignment.CenterHorizontally)
                 {
                     Text(
                         text = stringResource(R.string.esito_salvataggio),
                         fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     TaskExecutionList(
                         taskExecutionList = taskExecutionList
                     )
+                    sendWhatsAppMessage(context = context, taskExecutionList=taskExecutionList.toString())
                 }
-            }
+          //  }
+
+    //
+
             Box(Modifier.fillMaxSize()){
                 FloatingActionButton(
                     modifier = Modifier
@@ -371,11 +456,49 @@ fun visualizeTaskExecutionEntrySaved(
    }
 }
 
+
+@Composable
+fun sendWhatsAppMessage(
+    context: Context,
+    taskExecutionList: String
+    ) {
+
+    val phoneNumber = "3356331443"
+    val message = "Ho inserito: $taskExecutionList"
+
+    Button(
+        onClick = { if (!isPackageInstalled(context.packageManager))
+            Toast.makeText(context,"Whatsapp not installed",Toast.LENGTH_SHORT).show()
+        else
+            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://api.whatsapp.com/send?phone=$phoneNumber&text=$message")))
+        },
+        // on below line adding
+        // a modifier for our button.
+        modifier = Modifier
+         //   .fillMaxWidth()
+            .padding(10.dp)
+    ) {
+        // on below line adding a text for our button.
+        Text(text = "Invia la notifica tramite WhatsApp",style = MaterialTheme.typography.body1)
+    }
+}
+
+fun isPackageInstalled(packageManager: PackageManager): Boolean {
+    return try {
+        packageManager.getPackageInfo("com.whatsapp", PackageManager.GET_META_DATA)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 private fun ItemEntryScreenPreview() {
-    TaskProgress13Theme() {
         TaskExecutionEntryScreen(
+            taskName = "Inglese",
+/*
             taskProgressUiState = TaskProgressUiState(
                 taskName = "Inglese",
                 subTaskName = "Speexx",
@@ -384,9 +507,13 @@ private fun ItemEntryScreenPreview() {
                 executionDateUT = 0,
                 note = ""
             ),
+
             onTaskExecutionValueChange = {},
+
             onSaveClick = {},
-            onFABclick = {}
+            */
+
+            onFABclick = {},
+            context = LocalContext.current
         )
     }
-}

@@ -28,7 +28,7 @@ fun AllUsedAwardsScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(30.dp)
+            modifier = Modifier.padding(1.dp)
         ) {
             //       val taskExecutionList by viewModel.getTaskExecutionForTaskName(taskName)
             //           .collectAsState(emptyList())

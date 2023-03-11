@@ -33,15 +33,17 @@ fun UsedAwardList(
     usedAwardList: List<UsedAward>,
     iconType: String
 ) {
-
-    Column(horizontalAlignment = Alignment.CenterHorizontally)
+   Column(
+       horizontalAlignment = Alignment.CenterHorizontally,
+       modifier = Modifier.fillMaxWidth()
+   )
     {
         // Divider()
         Spacer(modifier = Modifier)
         //   AwardListHeader()
         LazyColumn(
             modifier = Modifier
-                .padding(16.dp),
+                .padding(1.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
@@ -71,7 +73,7 @@ fun UsedAwardListHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

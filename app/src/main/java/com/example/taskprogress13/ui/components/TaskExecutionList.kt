@@ -42,8 +42,8 @@ fun TaskExecutionList(
      //   TaskExecutionListHeader()
         LazyColumn(
             modifier = Modifier
- //               .fillMaxSize()
-                .padding(16.dp),
+            //    .fillMaxSize()
+                .padding(6.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             item {
@@ -72,7 +72,7 @@ fun TaskExecutionListHeader(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

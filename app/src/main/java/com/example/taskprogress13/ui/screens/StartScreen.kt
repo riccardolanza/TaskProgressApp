@@ -1,13 +1,12 @@
 package com.example.taskprogress13.ui.screens
 
-import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.*
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,21 +14,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskprogress13.R
 import com.example.taskprogress13.data.TaskReportData
 import com.example.taskprogress13.ui.components.transformTohhmm
+import com.example.taskprogress13.ui.theme.AppTheme
+import com.example.taskprogress13.ui.theme.Orientation
+import com.example.taskprogress13.ui.theme.largeDimensions
+import com.example.taskprogress13.ui.theme.mediumDimensions
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 
 @Composable
@@ -41,73 +42,71 @@ fun StartScreen(
     navigateToUsedAwardsByTaskNameScreen:  (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-
-    ){
-        Spacer(modifier = Modifier.height(10.dp))
-        Box(
-            modifier = Modifier
-            .weight(4f)
-        )
-        {
-            Column(
-                Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Row(modifier = Modifier.weight(1f)) {
-                    TaskCard(
-                        taskImageId = R.drawable.inglese,
-                        taskDescription = "Inglese",
-                        taskReportData=taskReport(taskName = "Inglese"),
-                        onButtonClicked = onDettagliButtonClicked,
-                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
-                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
-                        taskName="Inglese",
-                        modifier = Modifier
-                            .weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    TaskCard(
-                        taskImageId = R.drawable.syncro3,
-                        taskDescription = "Nuoto sincronizzato",
-                        taskReportData=taskReport(taskName = "Syncro"),
-                        onButtonClicked = onDettagliButtonClicked,
-                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
-                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
-                        taskName="Syncro",
+    if(AppTheme.orientation == Orientation.Portrait)
+    {
+        if (AppTheme.dimens==largeDimensions || AppTheme.dimens==mediumDimensions) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally
+       ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            Box(
+                modifier = Modifier
+                    .weight(4f)
+            )
+            {
+                Column(
+                    Modifier
+                        //   .verticalScroll(rememberScrollState()
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Row(
                         modifier = Modifier.weight(1f)
-                    )
+                    ) {
+                        TaskCard(
+                            taskImageId = R.drawable.inglese,
+                            onButtonClicked = onDettagliButtonClicked,
+                            navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                            navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                            taskName = "Inglese",
+                            modifier = Modifier
+                                .weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(20.dp))
+                        TaskCard(
+                            taskImageId = R.drawable.syncro3,
+                            onButtonClicked = onDettagliButtonClicked,
+                            navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                            navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                            taskName = "Syncro",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(modifier = Modifier.weight(1f)) {
+                        TaskCard(
+                            taskImageId = R.drawable.compiti1,
+                            onButtonClicked = onDettagliButtonClicked,
+                            navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                            navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                            taskName = "Compiti",
+                            modifier = Modifier.weight(1f)
+                        )
+                        Spacer(modifier = Modifier.width(20.dp))
+                        TaskCard(
+                            taskImageId = R.drawable.attivita_varie,
+                            onButtonClicked = onDettagliButtonClicked,
+                            navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                            navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                            taskName = "Altro",
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
                 }
-                Spacer(modifier = Modifier.height(10.dp))
-                Row(modifier = Modifier.weight(1f)) {
-                    TaskCard(
-                        taskImageId = R.drawable.compiti1,
-                        taskDescription = "Compiti",
-                        taskReportData=taskReport(taskName = "Compiti"),
-                        onButtonClicked = onDettagliButtonClicked,
-                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
-                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
-                        taskName="Compiti",
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.width(20.dp))
-                    TaskCard(
-                        taskImageId = R.drawable.attivita_varie,
-                        taskDescription = "Altre attività",
-                        taskReportData=taskReport(taskName = "Altro"),
-                        onButtonClicked = onDettagliButtonClicked,
-                        navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
-                        navigateToUsedAwardsByTaskNameScreen=navigateToUsedAwardsByTaskNameScreen,
-                        taskName="Altro",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
             }
-        }
-        /*
+
+            /*
         Divider()
         Box(
             modifier = Modifier
@@ -127,18 +126,113 @@ fun StartScreen(
             ) }
         }
         */
+        }
+
     }
-
-
+    else
+        {
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.height(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.inglese,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Inglese",
+                modifier = Modifier
+                    .weight(1f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.syncro3,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Syncro",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.compiti1,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Compiti",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.attivita_varie,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Altro",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+        }
+    }
+} else {  // Orientation is Landscape
+        Row(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .horizontalScroll(rememberScrollState())
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier.width(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.inglese,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Inglese",
+                modifier = Modifier
+                    .weight(1f)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.syncro3,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Syncro",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.compiti1,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Compiti",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            TaskCard(
+                taskImageId = R.drawable.attivita_varie,
+                onButtonClicked = onDettagliButtonClicked,
+                navigateToAllEligibleAwardsScreen = navigateToAllEligibleAwardsScreen,
+                navigateToUsedAwardsByTaskNameScreen = navigateToUsedAwardsByTaskNameScreen,
+                taskName = "Altro",
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+        }
+    }
 }
-
 
 
 @Composable
 private fun TaskCard(
     taskImageId:Int,
-    taskDescription: String,
-    taskReportData: TaskReportData,
     onButtonClicked: (String) -> Unit,
     navigateToAllEligibleAwardsScreen: () -> Unit,
     navigateToUsedAwardsByTaskNameScreen: (String) -> Unit,
@@ -146,60 +240,69 @@ private fun TaskCard(
     modifier: Modifier = Modifier
 ){
     val taskImage = painterResource(taskImageId)
-    //val taskProgressTer = englishProgress(timeIntervalInDays = 7)
+    val taskReportData = taskReport(taskName = taskName)
+
     Card(elevation=10.dp){
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween,
          //   modifier = Modifier.padding(30.dp)
         ) {
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(5.dp))
+
             Text(
                 text=taskName,
-                style = MaterialTheme.typography.h1,
+                style = MaterialTheme.typography.h5,
+                fontWeight = FontWeight.Bold
             //    modifier=Modifier.padding(top=10.dp)
            )
         //    Spacer(modifier = Modifier.height(10.dp))
+            Box(
+                contentAlignment = Alignment.Center
+            ){
             Image(
                 painter = taskImage,
-                contentDescription = taskDescription,
+                contentDescription = taskName,
+                contentScale = ContentScale.FillWidth,
                 modifier = Modifier
                     .size(190.dp)
                     .padding(10.dp)
-            )
+            )}
 
             Text(
                 text = "Totale (7/30 gg)",
-                fontSize = 15.sp,
+                style = MaterialTheme.typography.body2,
                 fontWeight = FontWeight.Bold
             )
 
             Text(
                 text = "${transformTohhmm(taskReportData.last7Days_duration.toString())} (${taskReportData.last7Days_progress}%)/${transformTohhmm(taskReportData.last30Days_duration.toString())} (${taskReportData.last30Days_progress}%)",
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body1
             )
 
             Spacer(modifier = Modifier.height(10.dp))
 
             val annotatedString = buildAnnotatedString {
-                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground,fontSize = 15.sp,fontWeight = FontWeight.Bold)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground,fontWeight = FontWeight.Bold)) {
                     append("Al netto dei ")
                 }
-                withStyle(style = SpanStyle(color = MaterialTheme.colors.primary,fontSize = 15.sp,fontWeight = FontWeight.Bold,)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.primary,fontWeight = FontWeight.Bold,)) {
                     append("premi fruiti")
                 }
-                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground, fontSize = 15.sp,fontWeight = FontWeight.Bold,)) {
+                withStyle(style = SpanStyle(color = MaterialTheme.colors.onBackground, fontWeight = FontWeight.Bold,)) {
                     append(" (7/30 gg)")
                 }
             }
 
             ClickableText(
                 text = annotatedString,
-                onClick = {navigateToUsedAwardsByTaskNameScreen(taskName)}
+                onClick = {navigateToUsedAwardsByTaskNameScreen(taskName)},
+                style = MaterialTheme.typography.body2
             )
 
             Text(
                 text = "${transformTohhmm(taskReportData.last7Days_netDuration.toString())} (${taskReportData.last7Days_netProgress}%)/${transformTohhmm(taskReportData.last30Days_netDuration.toString())} (${taskReportData.last30Days_netProgress}%)",
-                style = MaterialTheme.typography.body2
+                style = MaterialTheme.typography.body1
             )
 
             Spacer(modifier = Modifier.height(10.dp))

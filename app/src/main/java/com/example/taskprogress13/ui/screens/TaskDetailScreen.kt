@@ -39,7 +39,7 @@ fun TaskDetailScreen(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.padding(30.dp)
+            modifier = Modifier.padding(5.dp)
         ) {
             val taskExecutionList by viewModel.getTaskExecutionForTaskName(taskName)
                 .collectAsState(emptyList())

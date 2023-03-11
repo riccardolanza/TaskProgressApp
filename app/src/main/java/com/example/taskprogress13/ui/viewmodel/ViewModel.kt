@@ -1,6 +1,6 @@
 package com.example.taskprogress13.ui.viewmodel
 
-import androidx.compose.runtime.collectAsState
+import android.database.sqlite.SQLiteException
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,9 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.taskprogress13.data.*
-import kotlinx.coroutines.flow.forEach
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
+
 
 class TaskProgressViewModel(
     private val taskExecutionDao: TaskExecutionDao,
@@ -52,14 +50,22 @@ class TaskProgressViewModel(
         taskProgressUiState = taskProgressUiState.copy( taskName = taskName)
     }
 
+    fun updateUiStateVisualizeTaskExecutionNotSavedErrorMessageEnabled(value:Boolean) {
+        taskProgressUiState = taskProgressUiState.copy(visualizeTaskExecutionNotSavedErrorMessageEnabled=value)
+    }
+
     suspend fun deleteTaskExecution(taskExecution: TaskExecution) {
         taskExecutionDao.delete(taskExecution)
     }
 
     suspend fun saveTaskExecution() {
         if (taskProgressUiState.isValid()) {
-            taskExecutionDao.insert(taskProgressUiState.toTaskExecution())
-            taskProgressUiState = taskProgressUiState.copy(taskExecutionEntrySaved = true)
+            try{
+                taskExecutionDao.insert(taskProgressUiState.toTaskExecution())
+                taskProgressUiState = taskProgressUiState.copy(taskExecutionEntrySaved = true)
+                taskProgressUiState = taskProgressUiState.copy(visualizeTaskExecutionNotSavedErrorMessageEnabled=false)
+            } catch (e: SQLiteException){println("errore Insert: " + e)}
+
         }
         //  taskProgressUiState.taskExecutionEntrySaved()
     }

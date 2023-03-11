@@ -1,5 +1,7 @@
 package com.example.taskprogress13
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,17 +17,21 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.taskprogress13.ui.screens.*
+import com.example.taskprogress13.ui.theme.WindowSizeClass
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
 
 
 @Composable
 fun TaskProgressApp(
-    modifier: Modifier = Modifier,
+ //   window:WindowSizeClass,
+    modifier: Modifier,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
 ) {
     val navController = rememberNavController()
@@ -116,18 +122,21 @@ fun TaskProgressApp(
 
             composable(route = TaskExecutionEntryScreenDestination.route) {
                  TaskExecutionEntryScreen(
-                    taskProgressUiState = viewModel.taskProgressUiState,
-                    onTaskExecutionValueChange = viewModel::updateTaskProgressUiState,
-                    onSaveClick = {
+                  //  taskProgressUiState = viewModel.taskProgressUiState,
+                 //   onTaskExecutionValueChange = viewModel::updateTaskProgressUiState,
+                    /*onSaveClick = {
                         coroutineScope.launch {
                             viewModel.saveTaskExecution()
                         }
+                    //    Toast.makeText(context= LocalContext.current,message= "Esecuzione salvata!", Toast.LENGTH_SHORT).show()
                         focusManager.clearFocus()
-                    },
+                    },*/
+                    taskName = viewModel.taskProgressUiState.taskName,
                     onFABclick = {
                         viewModel.resetTaskProgressUiState()
                         navController.navigateUp()
                     },
+                    context = LocalContext.current
                 )
                 topAppBarTitle=TaskExecutionEntryScreenDestination.title
             }
@@ -176,7 +185,8 @@ fun TaskProgressApp(
                                 inclusive = true
                             }
                         }
-                    }
+                    },
+                    context = LocalContext.current
                 )
                 topAppBarTitle=AllAvailableAwardsScreenDestination.title
             }
@@ -253,4 +263,7 @@ fun TaskProgressTopAppBar(
             }
         }
     )
+}
+fun Context.toast(message:String){
+    Toast.makeText(this, message , Toast.LENGTH_SHORT).show()
 }
