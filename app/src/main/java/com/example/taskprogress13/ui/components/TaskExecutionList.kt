@@ -1,14 +1,12 @@
 package com.example.taskprogress13.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Place
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -16,11 +14,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.taskprogress13.AllTaskExecutionsScreenDestination
 import com.example.taskprogress13.R
+import com.example.taskprogress13.TaskDetailScreenDestination
 import com.example.taskprogress13.data.TaskExecution
+import com.example.taskprogress13.navigateSingleTopTo
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 import kotlinx.coroutines.launch
 
@@ -34,7 +35,7 @@ val noteWeight = 2f
 fun TaskExecutionList(
     modifier: Modifier = Modifier,
     taskExecutionList: List<TaskExecution>,
-//    onTaskExecutionClick: (TaskExecution) -> Unit
+    navController: NavController
 ) {
    Column(horizontalAlignment = Alignment.CenterHorizontally)
     {
@@ -56,7 +57,7 @@ fun TaskExecutionList(
             ) { taskExecution ->
                 TaskExecutionItem(
                     taskExecution = taskExecution,
-                    //           onTaskExecutionClick = onTaskExecutionClick
+                    navController = navController
                 )
                 Divider()
             }
@@ -113,11 +114,13 @@ private fun TaskExecutionItem(
     modifier: Modifier = Modifier,
     taskExecution: TaskExecution,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
+    navController: NavController
+    //deleteTaskExecution: () -> Unit
 //    onTaskExecutionClick: (TaskExecution) -> Unit,
 ) {
     var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
- //   var deleteConfirmationRequired:  Boolean =false
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,8 +161,17 @@ private fun TaskExecutionItem(
                 onDeleteConfirm = {
                     deleteConfirmationRequired = false
                     coroutineScope.launch {
+                        println("Cancellazione confermata sul DeleteConfirmationDialog")
                         viewModel.deleteTaskExecution(taskExecution=taskExecution)
-                    }
+                        println("Cancellazione avvenuta?")
+                        println("currentDestination: " + navController.currentBackStackEntry?.destination?.route)
+                        println("current argument taskName: " + navController.currentBackStackEntry?.arguments?.getString("task_name"))
+                        if (navController.currentBackStackEntry?.arguments?.getString("task_name") == null)
+                            navController.navigate(AllTaskExecutionsScreenDestination.route)
+                        else navController.navigate("${TaskDetailScreenDestination.route}/${navController.currentBackStackEntry?.arguments?.getString("task_name")}")
+
+                        //   navController.navigateUp()
+                   }
                },
                 onDeleteCancel = { deleteConfirmationRequired = false }
             )
@@ -207,15 +219,3 @@ private fun DeleteConfirmationDialog(
 
 
 
-@Preview
-@Composable
-fun TaskExecutionListPreview(){
-    TaskExecutionList(
-        modifier = Modifier,
-        taskExecutionList = arrayListOf(
-            TaskExecution(taskName="Inglese", subTaskName="Speexx", duration=10, executionDate="2023-01-12",executionDateUT=0, note = ""),
-            TaskExecution(taskName="Compiti", subTaskName="-", duration=10, executionDate="2023-01-13",executionDateUT=0,note="Me lo sono inventato ;-)"),
-            TaskExecution(taskName="Altro", subTaskName="Boh", duration=30, executionDate="2023-01-13",executionDateUT=0, note="Mamma può testimoniare!")
-        )
-    )
-}

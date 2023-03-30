@@ -1,20 +1,32 @@
 package com.example.taskprogress13.ui.viewmodel
 
 import com.example.taskprogress13.data.TaskExecution
-import java.text.SimpleDateFormat
+import com.example.taskprogress13.network.RemoteTaskExecution
+import kotlinx.coroutines.flow.Flow
+
+
+sealed interface RemoteTaskExecutionListUiState {
+    data class Success(
+        val remoteTaskExecutions: List<TaskExecution>
+        //val taskExecutions: String
+    ) : RemoteTaskExecutionListUiState
+    object Error : RemoteTaskExecutionListUiState
+    object Loading : RemoteTaskExecutionListUiState
+}
+
 
 
 /**
  * Represents Ui State for an Item.
  */
-data class TaskProgressUiState(
+data class RemoteTaskProgressUiState(
     val id: Long = 0,
     val taskName: String = "",
     val subTaskName: String = "",
     val duration: String = "",
     val executionDate: String = "",
     val executionDateUT: Long = 0,
-    val note: String = "",
+    var note: String = "",
     val actionEnabled: Boolean = false,
     val taskExecutionEntrySaved: Boolean = false,
     val visualizeTaskExecutionNotSavedErrorMessageEnabled: Boolean = false
@@ -23,7 +35,7 @@ data class TaskProgressUiState(
 /**
  * Extension function to convert [TaskProgressUiState] to [TaskExecution].
  **/
-fun TaskProgressUiState.toTaskExecution(): TaskExecution = TaskExecution(
+fun RemoteTaskProgressUiState.toTaskExecution(): TaskExecution = TaskExecution(
     id = id,
     taskName = taskName,
     subTaskName = subTaskName,
@@ -33,18 +45,10 @@ fun TaskProgressUiState.toTaskExecution(): TaskExecution = TaskExecution(
     note = note
 )
 
-fun convertToUT(executionDate: String): Long {
-    val format = SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
-    val date = format.parse("${executionDate} 00:00:00")
-    val timestamp = date.time
-    return timestamp
-}
-
-
 /**
- * Extension function to convert [TaskExecution] to [TaskProgressUiState]
+ * Extension function to convert [TaskExecution] to [RemoteTaskProgressUiState]
  */
-fun TaskExecution.toTaskProgressUiState(actionEnabled: Boolean = false): TaskProgressUiState = TaskProgressUiState(
+fun TaskExecution.toRemoteTaskProgressUiState(actionEnabled: Boolean = false): RemoteTaskProgressUiState = RemoteTaskProgressUiState(
     id = id,
     taskName = taskName,
     subTaskName = subTaskName,
@@ -55,7 +59,7 @@ fun TaskExecution.toTaskProgressUiState(actionEnabled: Boolean = false): TaskPro
     actionEnabled = actionEnabled
 )
 
-fun TaskProgressUiState.isValid() : Boolean {
+fun RemoteTaskProgressUiState.isValid() : Boolean {
     return taskName.isNotBlank() && subTaskName.isNotBlank() && duration.isNotBlank() && executionDate.isNotBlank()
 }
 

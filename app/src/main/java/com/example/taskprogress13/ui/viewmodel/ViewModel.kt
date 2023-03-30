@@ -10,7 +10,15 @@ import com.example.taskprogress13.TaskProgressApplication
 import kotlinx.coroutines.flow.Flow
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import com.example.taskprogress13.DATABASE
 import com.example.taskprogress13.data.*
+import com.example.taskprogress13.network.TaskProgressApi
+import com.example.taskprogress13.network.TaskProgressApiService
+import com.google.gson.Gson
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 
 class TaskProgressViewModel(
@@ -28,19 +36,32 @@ class TaskProgressViewModel(
         private set
     var usedAwardUiState by mutableStateOf(UsedAwardUiState())
         private set
+    var remoteTaskProgressUiState by mutableStateOf(RemoteTaskProgressUiState())
+        private set
+    var remoteTaskExecutionListUiState: RemoteTaskExecutionListUiState by mutableStateOf(
+        RemoteTaskExecutionListUiState.Loading
+    )
+        private set
 
-/* -------------------------------------- Inizio TaskExecution ---------------------------------- */
+    /* -------------------------------------- Inizio TaskExecution ---------------------------------- */
     fun getAllTaskExecutions(): Flow<List<TaskExecution>> = taskExecutionDao.getAll()
 
-    fun getTaskExecutionForTaskName(taskName: String): Flow<List<TaskExecution>> =
+    fun getTaskExecutionsByTaskName(taskName: String): Flow<List<TaskExecution>> =
         taskExecutionDao.getByTaskName(taskName)
 
-    fun getTaskExecutionFor_taskName_subTaskName_executionDate(taskName: String, subTaskName: String, executionDate: String): Flow<List<TaskExecution>> =
-        taskExecutionDao.getBy_taskName_subTaskName_executionDate(taskName, subTaskName, executionDate)
+    fun getTaskExecutionsBy_taskName_subTaskName_executionDate(
+        taskName: String,
+        subTaskName: String,
+        executionDate: String
+    ): Flow<List<TaskExecution>> =
+                    taskExecutionDao.getBy_taskName_subTaskName_executionDate(
+                taskName,
+                subTaskName,
+                executionDate
+            )
 
     fun getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT:Long,max_executionDateUT:Long,taskName:String): Flow<Int> =
         taskExecutionDao.getdurationSumByexecutionDateUT(min_executionDateUT,max_executionDateUT,taskName)
-
 
     fun updateTaskProgressUiState(newTaskProgressUiState: TaskProgressUiState) {
         taskProgressUiState = newTaskProgressUiState.copy( actionEnabled = newTaskProgressUiState.isValid())
@@ -53,22 +74,47 @@ class TaskProgressViewModel(
     fun updateUiStateVisualizeTaskExecutionNotSavedErrorMessageEnabled(value:Boolean) {
         taskProgressUiState = taskProgressUiState.copy(visualizeTaskExecutionNotSavedErrorMessageEnabled=value)
     }
-
+/*
     suspend fun deleteTaskExecution(taskExecution: TaskExecution) {
         taskExecutionDao.delete(taskExecution)
     }
-
+*/
     suspend fun saveTaskExecution() {
         if (taskProgressUiState.isValid()) {
             try{
-                taskExecutionDao.insert(taskProgressUiState.toTaskExecution())
+                if (DATABASE == "local") {
+                    taskExecutionDao.insert(taskProgressUiState.toTaskExecution())
+                }
+                else {
+                    val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                    remoteTaskExecutionRepository.saveRemoteTaskExecution(taskProgressUiState.toTaskExecution())
+                }
                 taskProgressUiState = taskProgressUiState.copy(taskExecutionEntrySaved = true)
                 taskProgressUiState = taskProgressUiState.copy(visualizeTaskExecutionNotSavedErrorMessageEnabled=false)
             } catch (e: SQLiteException){println("errore Insert: " + e)}
 
         }
-        //  taskProgressUiState.taskExecutionEntrySaved()
+
     }
+
+    suspend fun deleteTaskExecution(taskExecution: TaskExecution) {
+        println("Invocata deleteTaskExecution con taskExecution: ${taskExecution}")
+        try{
+            if (DATABASE == "local") {
+                println("Invocata deleteTaskExecution locale con taskExecution: ${taskExecution}")
+                taskExecutionDao.delete(taskExecution)
+            }
+            else {
+                println("Invocata deleteTaskExecution remota con id: ${taskExecution.id}")
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                remoteTaskExecutionRepository.deleteRemoteTaskExecution(taskExecution.id)
+            }
+        } catch (e: SQLiteException){println("errore Insert: " + e)}
+    }
+
+
+
+
 
     fun resetTaskProgressUiState() {
         taskProgressUiState = taskProgressUiState.copy(
@@ -147,6 +193,76 @@ class TaskProgressViewModel(
      * Updates the [taskProgressUiState] with the value provided in the argument. This method also triggers
      * a validation for input values.
      */
+/*
+    init {
+        getAllRemoteTaskExecutions()
+    }
+
+    fun getAllRemoteTaskExecutions() {
+        viewModelScope.launch {
+            remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
+            remoteTaskExecutionListUiState = try {
+                //RemoteTaskExecutionListUiState.Success(TaskProgressApi.retrofitService.getRemoteTaskExecutions())
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                RemoteTaskExecutionListUiState.Success(remoteTaskExecutionRepository.getAllRemoteTaskExecutions())
+
+            } catch (e: IOException) {
+                RemoteTaskExecutionListUiState.Error
+            } catch (e: HttpException) {
+                RemoteTaskExecutionListUiState.Error
+            }
+        }
+    }
+*/
+    fun getRemoteTaskExecutionsByTaskName(taskName: String) {
+        viewModelScope.launch {
+            remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
+            remoteTaskExecutionListUiState = try {
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                RemoteTaskExecutionListUiState.Success(remoteTaskExecutionRepository.getRemoteTaskExecutionsByTaskName(taskName))
+            } catch (e: IOException) {
+                RemoteTaskExecutionListUiState.Error
+            } catch (e: HttpException) {
+                RemoteTaskExecutionListUiState.Error
+            }
+        }
+    }
+
+    fun getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(
+        taskName: String,
+        subTaskName: String,
+        executionDate: String
+    ) {
+        viewModelScope.launch {
+         //   remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
+            remoteTaskExecutionListUiState = try {
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                RemoteTaskExecutionListUiState.Success(remoteTaskExecutionRepository.getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(taskName,subTaskName,executionDate))
+       } catch (e: IOException) {
+                RemoteTaskExecutionListUiState.Error
+            } catch (e: HttpException) {
+                RemoteTaskExecutionListUiState.Error
+            }
+        }
+    }
+
+
+
+
+
+
+    suspend fun saveRemoteTaskExecution() {
+        if (taskProgressUiState.isValid()) {
+            try{
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                remoteTaskExecutionRepository.saveRemoteTaskExecution(taskProgressUiState.toTaskExecution())
+                taskProgressUiState = taskProgressUiState.copy(taskExecutionEntrySaved = true)
+                taskProgressUiState = taskProgressUiState.copy(visualizeTaskExecutionNotSavedErrorMessageEnabled=false)
+            } catch (e: SQLiteException){println("errore Insert: " + e)}
+
+        }
+        //  taskProgressUiState.taskExecutionEntrySaved()
+    }
 
 
 

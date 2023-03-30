@@ -35,12 +35,17 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.taskprogress13.DATABASE
 import com.example.taskprogress13.R
 import com.example.taskprogress13.data.TaskExecution
 import com.example.taskprogress13.ui.components.TaskExecutionList
 import com.example.taskprogress13.ui.theme.Blu200
+import com.example.taskprogress13.ui.viewmodel.RemoteTaskExecutionListUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 
 import kotlinx.coroutines.launch
 
@@ -60,11 +65,12 @@ fun TaskExecutionEntryScreen(
  ) {
     val taskProgressUiState = viewModel.taskProgressUiState
     val onTaskExecutionValueChange = viewModel::updateTaskProgressUiState
-    val taskExecutionList by viewModel.getTaskExecutionFor_taskName_subTaskName_executionDate(taskProgressUiState.taskName, taskProgressUiState.subTaskName, taskProgressUiState.executionDate).collectAsState(emptyList())
+    val taskExecutionList by viewModel.getTaskExecutionsBy_taskName_subTaskName_executionDate(taskProgressUiState.taskName, taskProgressUiState.subTaskName, taskProgressUiState.executionDate).collectAsState(emptyList())
     val coroutineScope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-
+    var taskExecutionCanBeSaved = false
+    var taskExecutionSaved by remember { mutableStateOf("") }
 
     viewModel.updateUiStateTaskName(taskName=taskName)
     Column(
@@ -89,13 +95,60 @@ fun TaskExecutionEntryScreen(
                      modifier = Modifier.padding(10.dp),
                      onClick = {
                          coroutineScope.launch {
-                             if (taskExecutionList.isEmpty()) {
+
+                             if (DATABASE == "local") {
+                                 if(taskExecutionList.isEmpty())  taskExecutionCanBeSaved = true
+                             }
+                             else {
+                                 println("TaskProgressUiState al momento del click del bottone Salva: " + taskProgressUiState.toString())
+                                 viewModel.getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(
+                                     taskProgressUiState.taskName,
+                                     taskProgressUiState.subTaskName,
+                                     taskProgressUiState.executionDate
+                                 )
+                                 delay(3000)
+                                 val remoteTaskExecutionListUiState = viewModel.remoteTaskExecutionListUiState
+                                 println("remoteTaskExecutionListUiState prima del salvataggio: " + remoteTaskExecutionListUiState.toString())
+                                 when (remoteTaskExecutionListUiState) {
+                                     is RemoteTaskExecutionListUiState.Loading -> {}
+                                     is RemoteTaskExecutionListUiState.Success -> {
+                                         if (remoteTaskExecutionListUiState.remoteTaskExecutions.isEmpty()) taskExecutionCanBeSaved=true}
+                                     is RemoteTaskExecutionListUiState.Error -> {}
+                                     }
+                             }
+                             if (taskExecutionCanBeSaved) {
                                  viewModel.saveTaskExecution()
-                                 Toast.makeText(context, "Execuzione salvata!", Toast.LENGTH_SHORT).show()
+                                 delay(1000)
+                                 if (DATABASE == "local") {
+                                     if(!taskExecutionList.isEmpty()) {
+                                         taskExecutionSaved = taskExecutionList.toString()
+                                         Toast.makeText(context,"Execuzione salvata!",Toast.LENGTH_SHORT).show()
+                                     } else Toast.makeText(context, "Execuzione NON salvata in locale!", Toast.LENGTH_SHORT).show()
+                                 }
+                                 else {
+                                     viewModel.getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(
+                                         taskProgressUiState.taskName,
+                                         taskProgressUiState.subTaskName,
+                                         taskProgressUiState.executionDate
+                                     )
+                                     delay(1000)
+                                     val remoteTaskExecutionListUiState = viewModel.remoteTaskExecutionListUiState
+                                     println("remoteTaskExecutionListUiState dopo il salvataggio: " + remoteTaskExecutionListUiState.toString())
+                                     when (remoteTaskExecutionListUiState) {
+                                         is RemoteTaskExecutionListUiState.Loading -> {println("Controllando se la esecuzione è stata salvata RemoteTaskExecutionListUiState è in Loading")}
+                                         is RemoteTaskExecutionListUiState.Success -> {
+                                             println("remoteTaskExecutionListUiState.remoteTaskExecutions: " + remoteTaskExecutionListUiState.remoteTaskExecutions.toString())
+                                             if (!remoteTaskExecutionListUiState.remoteTaskExecutions.isEmpty()) {
+                                                 taskExecutionSaved=remoteTaskExecutionListUiState.remoteTaskExecutions.toString()
+                                                 println("taskExecutionSaved dopo il salvataggio:  $taskExecutionSaved")
+                                                 Toast.makeText(context, "Execuzione salvata!", Toast.LENGTH_SHORT).show()
+                                             } else Toast.makeText(context, "Execuzione NON salvata in remoto!", Toast.LENGTH_SHORT).show()}
+                                         is RemoteTaskExecutionListUiState.Error -> {}
+                                     }
+                                 }
+
                              }
                              else
-                                 //Toast.makeText(context, "Questa esecuzione è già stata inserita!", Toast.LENGTH_SHORT).show()
-                                 //visualizeNotSavedErrorMessageEnabled=true
                                  viewModel.updateUiStateVisualizeTaskExecutionNotSavedErrorMessageEnabled(true)
                         }
                          focusManager.clearFocus()
@@ -108,20 +161,14 @@ fun TaskExecutionEntryScreen(
                      )
                  }
              }
+            println ("taskProgressUiState prima di whatsapp: $taskProgressUiState")
+            println ("taskExecutionSaved prima di whatsapp: $taskExecutionSaved")
             if(taskProgressUiState.taskExecutionEntrySaved) {
-                sendWhatsAppMessage(context = context, taskExecutionList=taskExecutionList.toString())
+ //               sendWhatsAppMessage(context = context, taskExecutionList=taskExecutionList.toString())
+                sendWhatsAppMessage(context = context, taskExecutionSaved)
             }
 
             if(taskProgressUiState.visualizeTaskExecutionNotSavedErrorMessageEnabled==true) visualizeNotSavedErrorMessage()
-/*
-            visualizeTaskExecutionEntrySaved(
-                modifier = Modifier,
-                taskExecutionList=taskExecutionList,
-                taskExecutionEntrySaved=taskProgressUiState.taskExecutionEntrySaved,
-                onFABclick=onFABclick,
-                context = context
-            )
-            */
         }
     }
 }
@@ -408,7 +455,8 @@ fun visualizeTaskExecutionEntrySaved(
         taskExecutionList: List<TaskExecution>,
         taskExecutionEntrySaved: Boolean,
         onFABclick: () -> Unit,
-        context: Context
+        context: Context,
+        navController: NavController
 ) {
     if(taskExecutionEntrySaved) {
         if (taskExecutionList.isEmpty()) {
@@ -428,7 +476,8 @@ fun visualizeTaskExecutionEntrySaved(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     TaskExecutionList(
-                        taskExecutionList = taskExecutionList
+                        taskExecutionList = taskExecutionList,
+                        navController = navController
                     )
                     sendWhatsAppMessage(context = context, taskExecutionList=taskExecutionList.toString())
                 }

@@ -26,7 +26,7 @@ import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 
-
+const val DATABASE = "remote"
 
 @Composable
 fun TaskProgressApp(
@@ -34,6 +34,7 @@ fun TaskProgressApp(
     modifier: Modifier,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
 ) {
+
     val navController = rememberNavController()
     val currentBackStack by navController.currentBackStackEntryAsState()
     // Fetch your currentDestination:
@@ -45,6 +46,7 @@ fun TaskProgressApp(
     val allAwardsList by viewModel.getAllAwards().collectAsState(emptyList())
     val focusManager = LocalFocusManager.current
     var topAppBarTitle: String = ""
+
 
     Scaffold(
         topBar = {
@@ -76,9 +78,9 @@ fun TaskProgressApp(
                         navController.navigate(AllTaskExecutionsScreenDestination.route)
                     },
                     onDettagliButtonClicked = {taskName ->
-                        navController
-                            .navigateSingleTopTo("${TaskDetailScreenDestination.route}/$taskName")
-                    },
+                            navController
+                                .navigateSingleTopTo("${TaskDetailScreenDestination.route}/$taskName")
+                   },
                     navigateToAllEligibleAwardsScreen={
                         navController.navigate(AllEligibleAwardsScreenDestination.route)
                     },
@@ -107,6 +109,7 @@ fun TaskProgressApp(
                             viewModel.updateUiStateTaskName(taskName)
                             navController.navigate(TaskExecutionEntryScreenDestination.route)
                         },
+                        navController = navController
                     )
                 }
                 topAppBarTitle = TaskDetailScreenDestination.title + " " + taskName
@@ -115,7 +118,8 @@ fun TaskProgressApp(
             composable(route = AllTaskExecutionsScreenDestination.route) {
 //                val context = LocalContext.current
                 AllTaskExecutionsScreen(
-                    taskExecutionList=taskExecutionList
+                    taskExecutionList=taskExecutionList,
+                    navController=navController
                 )
                 topAppBarTitle=AllTaskExecutionsScreenDestination.title
             }

@@ -108,6 +108,22 @@ object AuthenticationFormScreenDestination : TaskProgressDestination {
     override val title = "Form di autenticazione per l'amministrazione"
 }
 
+object TaskDetailScreenDestinationRemoteDB : TaskProgressDestination {
+    // Added for simplicity, this icon will not in fact be used, as SingleAccount isn't
+    // part of the RallyTabRow selection
+    //   override val icon = Icons.Filled.Money
+    override val route = "task_detail_screen_remote_DB"
+    override val title = "Dettaglio esecuzioni su DB remoto"
+    const val taskNameArg = "task_name"
+    val routeWithArgs = "${route}/{${taskNameArg}}"
+    val arguments = listOf(
+        navArgument(taskNameArg) {
+            type = NavType.StringType
+            defaultValue = "Tutti"
+        }
+    )
+}
+
 val taskProgressScreens = listOf(
     StartScreenDestination,
     AllTaskExecutionsScreenDestination,
@@ -119,7 +135,8 @@ val taskProgressScreens = listOf(
     AllEligibleAwardsScreenDestination,
     AllUsedAwardsScreenDestination,
     UsedAwardsByTaskNameScreenDestination,
-    AuthenticationFormScreenDestination
+    AuthenticationFormScreenDestination,
+    TaskDetailScreenDestinationRemoteDB
 )
 
 fun NavHostController.navigateSingleTopTo(route: String) =

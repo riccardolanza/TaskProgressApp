@@ -11,13 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.taskprogress13.R
 import com.example.taskprogress13.data.TaskExecution
 import com.example.taskprogress13.ui.components.TaskExecutionList
 
 @Composable
 fun AllTaskExecutionsScreen(
-    taskExecutionList: List<TaskExecution>
+    taskExecutionList: List<TaskExecution>,
+    navController: NavController
 )
 {
     Column(
@@ -32,22 +34,10 @@ fun AllTaskExecutionsScreen(
             )
         } else {
             TaskExecutionList(
-                taskExecutionList = taskExecutionList
+                taskExecutionList = taskExecutionList,
+                navController = navController
             )
         }
 
     }
-}
-
-
-@Preview
-@Composable
-fun AllTasksScreenPreview(){
-    AllTaskExecutionsScreen(
-        taskExecutionList = arrayListOf(
-            TaskExecution(taskName="Inglese", subTaskName="Speexx", duration=10, executionDate="2023-01-12",executionDateUT=0, note = ""),
-            TaskExecution(taskName="Compiti", subTaskName="-", duration=10, executionDate="2023-01-13",executionDateUT=0,note="Me lo sono inventato ;-)"),
-            TaskExecution(taskName="Altro", subTaskName="Boh", duration=30, executionDate="2023-01-13",executionDateUT=0, note="Mamma può testimoniare!")
-       )
-    )
 }

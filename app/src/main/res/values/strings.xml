@@ -41,6 +41,9 @@
     <string name="no_used_awards_description">Non sono stati fruiti premi finora.</string>
     <string name="dateOfUse">Data e ora di utilizzo</string>
     <string name="delete_used_award_question">Vuoi eliminare questo utilizzo di premio?</string>
+    <string name="loading">In caricamento</string>
+    <string name="loading_failed">Caricamento fallito</string>
+    <string name="retry">Riprova</string>
     <string-array name="tasks_array">
         <item>Inglese</item>
         <item>Compiti</item>

@@ -106,6 +106,7 @@ fun StartScreen(
                 }
             }
 
+
             /*
         Divider()
         Box(
@@ -176,7 +177,7 @@ fun StartScreen(
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.height(10.dp))
-        }
+         }
     }
 } else {  // Orientation is Landscape
         Row(

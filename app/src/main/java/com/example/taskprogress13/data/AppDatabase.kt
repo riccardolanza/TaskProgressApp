@@ -7,7 +7,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 //@Database(entities = arrayOf(TaskExecution::class), version = 8)
-@Database(entities = [(TaskExecution::class),(Award::class),(UsedAward::class)], version = 12)
+@Database(entities = [(TaskExecution::class),(Award::class),(UsedAward::class)], version = 13)
 abstract class AppDatabase: RoomDatabase() {
     abstract fun taskExecutionDao(): TaskExecutionDao
     abstract fun awardDao(): AwardDao

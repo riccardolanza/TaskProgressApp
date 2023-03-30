@@ -4,6 +4,7 @@ import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import kotlinx.serialization.Serializable
 import java.util.*
 
 
@@ -13,13 +14,15 @@ import java.util.*
  * Additionally, an ID is needed as a unique identifier for
  * each row in the database.
  */
+@Serializable
 @Entity(
     tableName = "task_execution",
     primaryKeys = ["task_name","sub_task_name","execution_date"]
 )
 data class TaskExecution(
 //    @PrimaryKey (autoGenerate = true)
-//    val id: Int,
+    val id: Long,
+
     @NonNull
     @ColumnInfo(name = "task_name")
     val taskName: String,
