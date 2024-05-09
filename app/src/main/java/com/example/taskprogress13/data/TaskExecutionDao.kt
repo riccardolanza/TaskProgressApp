@@ -27,7 +27,7 @@ interface TaskExecutionDao {
         ORDER BY execution_date_ut DESC 
         """
     )
-    fun getByTaskName(taskName: String): Flow<List<TaskExecution>>
+    fun getByTaskName(taskName: String): List<TaskExecution>
 
     @Query(
         """
@@ -50,7 +50,6 @@ interface TaskExecutionDao {
     fun getdurationSumByexecutionDateUT(
         min_executionDateUT:Long,max_executionDateUT: Long,taskName: String
     ): Flow<Int>
-
 
 
     @Insert(onConflict = OnConflictStrategy.ABORT)

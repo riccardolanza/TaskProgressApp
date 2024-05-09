@@ -44,16 +44,18 @@ fun convertToUT(executionDate: String): Long {
 /**
  * Extension function to convert [TaskExecution] to [TaskProgressUiState]
  */
-fun TaskExecution.toTaskProgressUiState(actionEnabled: Boolean = false): TaskProgressUiState = TaskProgressUiState(
-    id = id,
-    taskName = taskName,
-    subTaskName = subTaskName,
-    duration = duration.toString(),
-    executionDate = executionDate,
-    executionDateUT = executionDateUT,
-    note = note,
-    actionEnabled = actionEnabled
-)
+fun TaskExecution.toTaskProgressUiState(actionEnabled: Boolean = false): TaskProgressUiState {
+    return TaskProgressUiState(
+        id = id,
+        taskName = taskName,
+        subTaskName = subTaskName,
+        duration = duration.toString(),
+        executionDate = executionDate,
+        executionDateUT = executionDateUT,
+        note = note,
+        actionEnabled = actionEnabled
+    )
+}
 
 fun TaskProgressUiState.isValid() : Boolean {
     return taskName.isNotBlank() && subTaskName.isNotBlank() && duration.isNotBlank() && executionDate.isNotBlank()

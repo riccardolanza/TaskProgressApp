@@ -1,6 +1,9 @@
 package com.example.taskprogress13.ui.viewmodel
 
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
 import com.example.taskprogress13.data.TaskExecution
+import com.example.taskprogress13.data.TaskReportData
 import com.example.taskprogress13.network.RemoteTaskExecution
 import kotlinx.coroutines.flow.Flow
 
@@ -12,6 +15,14 @@ sealed interface RemoteTaskExecutionListUiState {
     ) : RemoteTaskExecutionListUiState
     object Error : RemoteTaskExecutionListUiState
     object Loading : RemoteTaskExecutionListUiState
+}
+
+sealed interface RemoteTaskExecutionListUiStatePerTaskName {
+    data class Success(
+        val remoteTaskExecutionListPerTaskName: Map<String, List<TaskExecution>>
+    ) : RemoteTaskExecutionListUiStatePerTaskName
+    object Error : RemoteTaskExecutionListUiStatePerTaskName
+    object Loading : RemoteTaskExecutionListUiStatePerTaskName
 }
 
 

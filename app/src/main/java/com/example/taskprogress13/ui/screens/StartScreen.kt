@@ -4,6 +4,7 @@ import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.verticalScroll
@@ -24,6 +25,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.taskprogress13.DATABASE
 import com.example.taskprogress13.R
 import com.example.taskprogress13.data.TaskReportData
 import com.example.taskprogress13.ui.components.transformTohhmm
@@ -32,6 +34,9 @@ import com.example.taskprogress13.ui.theme.Orientation
 import com.example.taskprogress13.ui.theme.largeDimensions
 import com.example.taskprogress13.ui.theme.mediumDimensions
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
+import com.example.taskprogress13.data.TaskExecution
+import com.example.taskprogress13.ui.viewmodel.RemoteTaskExecutionListUiState
+import com.example.taskprogress13.ui.viewmodel.RemoteTaskExecutionListUiStatePerTaskName
 
 @Composable
 fun StartScreen(
@@ -41,6 +46,7 @@ fun StartScreen(
     onDettagliButtonClicked: (String) -> Unit,
     navigateToUsedAwardsByTaskNameScreen:  (String) -> Unit,
     modifier: Modifier = Modifier,
+    viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory)
 ) {
     if(AppTheme.orientation == Orientation.Portrait)
     {
@@ -349,38 +355,134 @@ fun taskReport(
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
     taskName: String
 ) : TaskReportData {
+    val taskDataMap = remember { mutableStateMapOf<String, TaskReportData>() }
     var taskReportData: TaskReportData = TaskReportData(0,0,0,0,0, 0, 0, 0, 0)
     val dailyTargetInMinutes=10
 
 // UT variables
     val currentUT = System.currentTimeMillis()
     val _8DaysAgoUT= currentUT - 691200000 // per poter prendere in considerazione anche la parte di giornata iniziale
-     val _31DaysAgoUT = currentUT - 2678400000 // per poter prendere in considerazione anche la parte di giornata iniziale
+    val _31DaysAgoUT = currentUT - 2678400000 // per poter prendere in considerazione anche la parte di giornata iniziale
 
-//total durations
-    val last7Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_8DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
-    val last30Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_31DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
-    val total_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=0,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
+    if (DATABASE == "local") {
+        //total durations
+        val last7Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_8DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
+        val last30Days_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=_31DaysAgoUT,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
+        val total_duration by viewModel.getdurationSumByexecutionDateUTANDtaskName(min_executionDateUT=0,max_executionDateUT=currentUT, taskName = "$taskName").collectAsState(0)
 
-//progresses
-    val last7Days_progress = 100*last7Days_duration/(7*dailyTargetInMinutes)
-    val last30Days_progress = 100*last30Days_duration/(30*dailyTargetInMinutes)
+        //progresses
+        val last7Days_progress = 100*last7Days_duration/(7*dailyTargetInMinutes)
+        val last30Days_progress = 100*last30Days_duration/(30*dailyTargetInMinutes)
 
-//Awards durations
-    val last7Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_8DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
-    val last30Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_31DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
+        //Awards durations
+        val last7Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_8DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
+        val last30Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_31DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
 
-//netDurations
-    val last7Days_netDuration = last7Days_duration - last7Days_awardDuration
-    val last30Days_netDuration = last30Days_duration - last30Days_awardDuration
-//net progresses
-    val last7Days_netProgress = 100*(last7Days_netDuration)/(7*dailyTargetInMinutes)
-    val last30Days_netProgress = 100*(last30Days_netDuration)/(30*dailyTargetInMinutes)
+        //netDurations
+        val last7Days_netDuration = last7Days_duration - last7Days_awardDuration
+        val last30Days_netDuration = last30Days_duration - last30Days_awardDuration
 
-    taskReportData = TaskReportData(total_duration,last30Days_duration, last7Days_duration,last30Days_progress,last7Days_progress,last7Days_netDuration,last30Days_netDuration,last30Days_netProgress,last7Days_netProgress)
-//    println("taskReportData: $taskReportData")
+        //net progresses
+        val last7Days_netProgress = 100*(last7Days_netDuration)/(7*dailyTargetInMinutes)
+        val last30Days_netProgress = 100*(last30Days_netDuration)/(30*dailyTargetInMinutes)
+
+        taskReportData = TaskReportData(total_duration,last30Days_duration, last7Days_duration,last30Days_progress,last7Days_progress,last7Days_netDuration,last30Days_netDuration,last30Days_netProgress,last7Days_netProgress)
+        //    println("taskReportData: $taskReportData")
+        return taskReportData
+    } else {
+        val remoteTaskExecutionListUiState = viewModel.remoteTaskExecutionListUiState
+        val remoteTaskExecutionListUiStatePerTaskName = viewModel.remoteTaskExecutionListUiStatePerTaskName
+        LaunchedEffect(Unit) {
+            viewModel.getRemoteTaskExecutionsByTaskName_new(taskName)
+        }
+        when (remoteTaskExecutionListUiStatePerTaskName) {
+            is RemoteTaskExecutionListUiStatePerTaskName.Loading -> {
+                taskReportData = TaskReportData(-1,-1, -1,-1,-1,-1,-1,-1,-1)
+                return taskReportData
+            }
+            is RemoteTaskExecutionListUiStatePerTaskName.Success -> {
+                for ((task, taskExecutions) in remoteTaskExecutionListUiStatePerTaskName.remoteTaskExecutionListPerTaskName) {
+                    println("Report di $taskName: RemoteTaskExecutionListUiStatePerTaskName.Success - Task Name: $task")
+                    println("Report di $taskName: RemoteTaskExecutionListUiStatePerTaskName.Success - Task Executions: $taskExecutions")
+                }
+                //total durations
+                var last7Days_duration=0
+                var last30Days_duration=0
+                var total_duration=0
+                var last30Days_progress =04f
+                var last7Days_progress=0
+                var last7Days_netDuration = 1000
+                var last30Days_netDuration = 1000
+                var last30Days_netProgress = 1000
+                var last7Days_netProgress = 1000
+                val taskExecutionList = remoteTaskExecutionListUiStatePerTaskName.remoteTaskExecutionListPerTaskName[taskName]
+                if (taskExecutionList != null) {
+                    for (taskExecution in taskExecutionList) {
+                        if (taskExecution.executionDateUT >=_8DaysAgoUT ) {
+                            last7Days_duration += taskExecution.duration
+                        }
+                        if (taskExecution.executionDateUT >=_31DaysAgoUT ) {
+                            last30Days_duration += taskExecution.duration
+                        }
+                        total_duration += taskExecution.duration
+
+                        //progresses
+                        val last7Days_progress = 100*last7Days_duration/(7*dailyTargetInMinutes)
+                        val last30Days_progress = 100*last30Days_duration/(30*dailyTargetInMinutes)
+
+                        //Awards durations
+                        val last7Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_8DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
+                        val last30Days_awardDuration by viewModel.getDurationSumByDateOfUseUTANDtaskName(min_dateOfUseUT=_31DaysAgoUT,max_dateOfUseUT=currentUT, taskName = "$taskName").collectAsState(0)
+
+                        //netDurations
+                        val last7Days_netDuration = last7Days_duration - last7Days_awardDuration
+                        val last30Days_netDuration = last30Days_duration - last30Days_awardDuration
+                        //net progresses
+                        val last7Days_netProgress = 100*(last7Days_netDuration)/(7*dailyTargetInMinutes)
+                        val last30Days_netProgress = 100*(last30Days_netDuration)/(30*dailyTargetInMinutes)
+
+                        //    println("taskReportData: $taskReportData")
+                    }
+                }
+                taskReportData = TaskReportData(total_duration,last30Days_duration, last7Days_duration,
+                    last30Days_progress.toInt(),last7Days_progress.toInt(),last7Days_netDuration,last30Days_netDuration,last30Days_netProgress,last7Days_netProgress)
+                println("taskReportData di $taskName: $taskReportData")
+                return taskReportData
+            }
+            is RemoteTaskExecutionListUiStatePerTaskName.Error -> {
+                taskReportData = TaskReportData(-3,-3, -3,-3,-3,-3,-3,-3,-3)
+                return taskReportData
+            }
+        }
+     }
+/*
+
     return taskReportData
+*/
+}
 
+fun TaskReportDataBasatoSugetRemoteTaskExecutionsByTaskNameResponse(taskExecutionList: List<TaskExecution>): TaskReportData {
+    var taskReportData: TaskReportData = TaskReportData(0,0,0,0,0, 0, 0, 0, 0)
+    taskReportData = TaskReportData(2,2, 2,2,2,2,2,2,2)
+    println("taskReportData: $taskReportData")
+    val currentUT = System.currentTimeMillis()
+    val _8DaysAgoUT= currentUT - 691200000 // per poter prendere in considerazione anche la parte di giornata iniziale
+    val _31DaysAgoUT = currentUT - 2678400000 // per poter prendere in considerazione anche la parte di giornata iniziale
+    var last7Days_duration=0
+    var last30Days_duration=0
+    var total_duration=0
+    for (taskExecution in taskExecutionList) {
+        println("TaskExecution: $taskExecution")
+        println("duration: ${taskExecution.duration}")
+        if (taskExecution.executionDateUT >=_8DaysAgoUT ) {
+            last7Days_duration += taskExecution.duration
+        }
+        if (taskExecution.executionDateUT >=_31DaysAgoUT ) {
+            last30Days_duration += taskExecution.duration
+        }
+        total_duration += taskExecution.duration
+        }
+    return taskReportData
 }
 
 

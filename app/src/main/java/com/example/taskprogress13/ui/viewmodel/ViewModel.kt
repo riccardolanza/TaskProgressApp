@@ -17,7 +17,10 @@ import com.example.taskprogress13.network.TaskProgressApi
 import com.example.taskprogress13.network.TaskProgressApiService
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
+import retrofit2.Call
+import retrofit2.Callback
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 
 
@@ -42,11 +45,14 @@ class TaskProgressViewModel(
         RemoteTaskExecutionListUiState.Loading
     )
         private set
-
+    var remoteTaskExecutionListUiStatePerTaskName: RemoteTaskExecutionListUiStatePerTaskName by mutableStateOf(
+        RemoteTaskExecutionListUiStatePerTaskName.Loading
+    )
+    private val taskExecutionsMap = mutableMapOf<String, List<TaskExecution>>()
     /* -------------------------------------- Inizio TaskExecution ---------------------------------- */
     fun getAllTaskExecutions(): Flow<List<TaskExecution>> = taskExecutionDao.getAll()
 
-    fun getTaskExecutionsByTaskName(taskName: String): Flow<List<TaskExecution>> =
+    fun getTaskExecutionsByTaskName(taskName: String): List<TaskExecution> =
         taskExecutionDao.getByTaskName(taskName)
 
     fun getTaskExecutionsBy_taskName_subTaskName_executionDate(
@@ -214,19 +220,86 @@ class TaskProgressViewModel(
         }
     }
 */
-    fun getRemoteTaskExecutionsByTaskName(taskName: String) {
+/*
+    fun getRemoteTaskExecutionsByTaskName_new(taskName: String) {
         viewModelScope.launch {
             remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
-            remoteTaskExecutionListUiState = try {
+            try {
                 val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
-                RemoteTaskExecutionListUiState.Success(remoteTaskExecutionRepository.getRemoteTaskExecutionsByTaskName(taskName))
+                val taskExecutionsFlow = remoteTaskExecutionRepository.getRemoteTaskExecutionsByTaskName(taskName)
+                taskExecutionsFlow.collect { taskExecutions ->
+                    remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Success(taskExecutions)
+                }
             } catch (e: IOException) {
-                RemoteTaskExecutionListUiState.Error
+                remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Error
             } catch (e: HttpException) {
-                RemoteTaskExecutionListUiState.Error
+                remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Error
             }
         }
     }
+    */
+    fun getRemoteTaskExecutionsByTaskName(taskName: String) {
+        viewModelScope.launch {
+                remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
+                remoteTaskExecutionListUiState = try {
+                    val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                        RemoteTaskExecutionListUiState.Success(
+                            remoteTaskExecutionRepository.getRemoteTaskExecutionsByTaskName(
+                                taskName
+                            )
+                        )
+                } catch (e: IOException) {
+                    RemoteTaskExecutionListUiState.Error
+                } catch (e: HttpException) {
+                    RemoteTaskExecutionListUiState.Error
+                }
+            }
+    }
+
+    fun getRemoteTaskExecutionsByTaskName_new(taskName: String) {
+        viewModelScope.launch {
+            remoteTaskExecutionListUiStatePerTaskName = RemoteTaskExecutionListUiStatePerTaskName.Loading
+            val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+            try {
+                val taskExecutions = remoteTaskExecutionRepository.getRemoteTaskExecutionsByTaskName(taskName)
+                taskExecutionsMap[taskName] = taskExecutions
+                // Update state with Success after successful execution
+                updateRemoteTaskExecutionListUiState(RemoteTaskExecutionListUiStatePerTaskName.Success(taskExecutionsMap.toMap()))
+            } catch (e: IOException) {
+                // Update state with Error on IOException
+                updateRemoteTaskExecutionListUiState(RemoteTaskExecutionListUiStatePerTaskName.Error)
+            } catch (e: HttpException) {
+                // Update state with Error on HttpException
+                updateRemoteTaskExecutionListUiState(RemoteTaskExecutionListUiStatePerTaskName.Error)
+            }
+        }
+    }
+
+    private fun updateRemoteTaskExecutionListUiState(newState: RemoteTaskExecutionListUiStatePerTaskName) {
+        remoteTaskExecutionListUiStatePerTaskName = newState
+    }
+/*
+    fun getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate_flow(
+        taskName: String,
+        subTaskName: String,
+        executionDate: String
+    ) {
+        viewModelScope.launch {
+            remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Loading
+            try {
+                val remoteTaskExecutionRepository = DefaultRemoteTaskExecutionRepository()
+                val taskExecutionsFlow = remoteTaskExecutionRepository.getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(taskName, subTaskName, executionDate)
+                taskExecutionsFlow.collect { taskExecutions ->
+                    remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Success(taskExecutions)
+                }
+            } catch (e: IOException) {
+                remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Error
+            } catch (e: HttpException) {
+                remoteTaskExecutionListUiState = RemoteTaskExecutionListUiState.Error
+            }
+        }
+    }
+*/
 
     fun getRemoteTaskExecutionsBy_taskName_subTaskName_executionDate(
         taskName: String,

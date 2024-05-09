@@ -4,6 +4,7 @@ import android.text.Layout
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.lifecycle.viewModelScope
 
 import androidx.compose.foundation.layout.*
 
@@ -29,10 +30,12 @@ import com.example.taskprogress13.ui.components.TaskExecutionList
 import com.example.taskprogress13.ui.theme.Blu200
 import com.example.taskprogress13.ui.viewmodel.RemoteTaskExecutionListUiState
 import com.example.taskprogress13.ui.viewmodel.TaskProgressViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
-
+/*
 @Composable
-fun TaskDetailScreen(
+fun TaskDetailScreen_originale(
     taskName: String,
     navigateToTaskExecutionEntryScreen: () -> Unit,
     viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
@@ -40,8 +43,7 @@ fun TaskDetailScreen(
 )
 {
     if (DATABASE == "local") {
-        val taskExecutionList by viewModel.getTaskExecutionsByTaskName(taskName)
-            .collectAsState(emptyList())
+        val taskExecutionList = viewModel.getTaskExecutionsByTaskName(taskName)
         TaskExecutionListScreen(
             taskExecutionList = taskExecutionList,
             modifier = Modifier,
@@ -52,7 +54,15 @@ fun TaskDetailScreen(
     } else {
         LaunchedEffect(Unit, block = { viewModel.getRemoteTaskExecutionsByTaskName(taskName) })
         //val retryAction = viewModel::getAllRemoteTaskExecutions
-        val retryAction = {} //TODO
+        val taskExecutionList = viewModel.getRemoteTaskExecutionsByTaskName(taskName)
+        /*
+        val retryAction = {
+            // Implementa qui la logica per riprovare a ottenere le esecuzioni di attività remote
+            viewModel.getRemoteTaskExecutionsByTaskName(taskName)
+        }
+        */
+
+        //val retryAction = {} //TODO
         val remoteTaskExecutionListUiState = viewModel.remoteTaskExecutionListUiState
         when (remoteTaskExecutionListUiState) {
             is RemoteTaskExecutionListUiState.Loading -> LoadingScreen(modifier = Modifier)
@@ -63,7 +73,51 @@ fun TaskDetailScreen(
                 navigateToTaskExecutionEntryScreen = navigateToTaskExecutionEntryScreen,
                 navController = navController
             )
-            is RemoteTaskExecutionListUiState.Error -> ErrorScreen(retryAction, modifier = Modifier)
+            is RemoteTaskExecutionListUiState.Error -> ErrorScreen(
+            retryAction = { viewModel.getRemoteTaskExecutionsByTaskName(taskName) },
+            modifier = Modifier)
+        }
+    }
+}
+*/
+@Composable
+fun TaskDetailScreen(
+    taskName: String,
+    navigateToTaskExecutionEntryScreen: () -> Unit,
+    viewModel: TaskProgressViewModel = viewModel(factory = TaskProgressViewModel.factory),
+    navController: NavController
+) {
+    if (DATABASE == "local") {
+        val taskExecutionList = viewModel.getTaskExecutionsByTaskName(taskName)
+        TaskExecutionListScreen(
+            taskExecutionList = taskExecutionList,
+            modifier = Modifier,
+            taskName = taskName,
+            navigateToTaskExecutionEntryScreen = navigateToTaskExecutionEntryScreen,
+            navController = navController
+        )
+    } else {
+        val remoteTaskExecutionListUiState = viewModel.remoteTaskExecutionListUiState
+
+        LaunchedEffect(Unit) {
+            viewModel.getRemoteTaskExecutionsByTaskName(taskName)
+        }
+
+        when (remoteTaskExecutionListUiState) {
+            is RemoteTaskExecutionListUiState.Loading -> LoadingScreen(modifier = Modifier)
+            is RemoteTaskExecutionListUiState.Success -> {
+                // Mostra i dati con TaskExecutionListScreen
+                TaskExecutionListScreen(
+                    taskExecutionList = remoteTaskExecutionListUiState.remoteTaskExecutions,
+                    modifier = Modifier,
+                    taskName = taskName,
+                    navigateToTaskExecutionEntryScreen = navigateToTaskExecutionEntryScreen,
+                    navController = navController
+                )
+            }
+            is RemoteTaskExecutionListUiState.Error -> ErrorScreen(
+            retryAction = { viewModel.getRemoteTaskExecutionsByTaskName(taskName) },
+            modifier = Modifier)
         }
     }
 }

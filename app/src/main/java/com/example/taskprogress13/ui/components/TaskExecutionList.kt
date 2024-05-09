@@ -181,14 +181,14 @@ private fun TaskExecutionItem(
 
 fun transformTohhmm(durationInMinutes: String):String
 {
-    println("durationInMinutes: $durationInMinutes")
+ //   println("durationInMinutes: $durationInMinutes")
     val quoziente = durationInMinutes.toInt()/60
-    println("quoziente: $quoziente")
+ //   println("quoziente: $quoziente")
     val resto = durationInMinutes.toInt()%60
-    println("resto: $resto")
+ //   println("resto: $resto")
     var durationInhhmm = "${durationInMinutes}m"
     if(quoziente>0) {durationInhhmm = "${quoziente}h ${resto}m"}
-    println("durationInhhmm: $durationInhhmm")
+ //   println("durationInhhmm: $durationInhhmm")
     return durationInhhmm
 }
 
